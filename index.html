@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sari Express - Control de Paquetería</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EFE9;
+    --border: #E2E0D8;
+    --text: #1A1A18;
+    --text2: #6B6A65;
+    --text3: #9E9D98;
+    --accent: #1A3A5C;
+    --accent-light: #E6EFF7;
+    --accent-mid: #378ADD;
+    --success: #3B6D11;
+    --success-bg: #EAF3DE;
+    --danger: #A32D2D;
+    --danger-bg: #FCEBEB;
+    --warning: #854F0B;
+    --warning-bg: #FAEEDA;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* AUTH */
+  #auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg);
+  }
+
+  .auth-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow);
+  }
+
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .auth-logo .brand {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .auth-logo .sub {
+    font-size: 13px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  .auth-tabs {
+    display: flex;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+  }
+
+  .auth-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--accent-mid);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .msg {
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-top: 1rem;
+  }
+
+  .msg.error { background: var(--danger-bg); color: var(--danger); }
+  .msg.success { background: var(--success-bg); color: var(--success); }
+
+  /* APP LAYOUT */
+  #app-screen { display: none; min-height: 100vh; }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-brand {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .topbar-sep {
+    color: var(--border);
+    font-size: 18px;
+  }
+
+  .topbar-page {
+    font-size: 14px;
+    color: var(--text2);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .user-badge {
+    font-size: 13px;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .btn-sm {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+  }
+
+  .btn-sm:hover { background: var(--surface2); color: var(--text); }
+
+  .btn-accent {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .btn-accent:hover { opacity: 0.9; background: var(--accent); color: white; }
+
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    gap: 0;
+  }
+
+  .nav-item {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .nav-item.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .nav-item:hover { color: var(--text); }
+
+  .main {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 3px;
+  }
+
+  /* INGRESO */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .topbar-page { display: none; }
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+
+  .btn-submit {
+    padding: 10px 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-submit:hover { opacity: 0.9; }
+
+  .btn-clear {
+    padding: 10px 16px;
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .batch-area {
+    width: 100%;
+    min-height: 120px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+  }
+
+  .batch-area:focus { border-color: var(--accent-mid); }
+
+  .batch-hint {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 6px;
+  }
+
+  /* TABLE */
+  .table-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .table-toolbar input, .table-toolbar select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+  }
+
+  .table-toolbar input:focus, .table-toolbar select:focus {
+    border-color: var(--accent-mid);
+  }
+
+  .table-toolbar input { flex: 1; min-width: 180px; }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface2); }
+
+  .tracking-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 3px 7px;
+    border-radius: 5px;
+  }
+
+  .carrier-badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .carrier-amazon { background: #FFF3E0; color: #E65100; }
+  .carrier-shein { background: #FCE4EC; color: #880E4F; }
+  .carrier-ebay { background: #E8F5E9; color: #2E7D32; }
+  .carrier-temu { background: #E3F2FD; color: #1565C0; }
+  .carrier-aliexpress { background: #FFF8E1; color: #F57F17; }
+  .carrier-other { background: var(--surface2); color: var(--text2); }
+
+  .btn-delete {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    border: 1px solid var(--danger-bg);
+    background: var(--danger-bg);
+    color: var(--danger);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-delete:hover { background: #F7C1C1; }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text3);
+  }
+
+  .empty-state .icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.4;
+  }
+
+  .empty-state p { font-size: 14px; }
+
+  .pagination {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .page-btn {
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .page-btn:hover { background: var(--surface2); }
+  .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: white;
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.25s ease;
+    max-width: 320px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text2);
+    font-size: 14px;
+    padding: 2rem 0;
+    justify-content: center;
+  }
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent-mid);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .count-badge {
+    font-size: 12px;
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="brand">Sari Express</div>
+      <div class="sub">Control de Paquetería</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Iniciar sesión</button>
+      <button class="auth-tab" onclick="switchTab('register')">Registrarse</button>
+    </div>
+    <div id="login-form">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-primary" onclick="doLogin()" id="btn-login">Entrar</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-name" placeholder="Tu nombre">
+      </div>
+      <button class="btn-primary" onclick="doRegister()" id="btn-register">Crear cuenta</button>
+    </div>
+    <div id="auth-msg"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">Sari Express</span>
+      <span class="topbar-sep">|</span>
+      <span class="topbar-page">Paquetería</span>
+    </div>
+    <div class="topbar-right">
+      <span class="user-badge" id="user-email-badge"></span>
+      <button class="btn-sm" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-item active" onclick="showPanel('dashboard')">Inicio</button>
+    <button class="nav-item" onclick="showPanel('ingreso')">Ingresar paquetes</button>
+    <button class="nav-item" onclick="showPanel('historico')">Historial</button>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Hoy</div>
+          <div class="stat-value" id="stat-today">0</div>
+          <div class="stat-sub">paquetes ingresados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Esta semana</div>
+          <div class="stat-value" id="stat-week">0</div>
+          <div class="stat-sub">paquetes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-sub">en el sistema</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Carriers</div>
+          <div class="stat-value" id="stat-carriers">0</div>
+          <div class="stat-sub">activos</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Últimos ingresos</div>
+        <div id="recent-table-wrap">
+          <div class="loading"><div class="spinner"></div> Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INGRESO -->
+    <div class="panel" id="panel-ingreso">
+
+      <div class="card">
+        <div class="card-title">Ingreso individual</div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Tracking number</label>
+            <input type="text" id="single-tracking" placeholder="ej. TBA123456789000">
+          </div>
+          <div class="form-group">
+            <label>Carrier</label>
+            <select id="single-carrier">
+              <option value="">Seleccionar...</option>
+              <option value="Amazon">Amazon</option>
+              <option value="Shein">Shein</option>
+              <option value="eBay">eBay</option>
+              <option value="Temu">Temu</option>
+              <option value="AliExpress">AliExpress</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fila / Ubicación</label>
+            <input type="text" id="single-fila" placeholder="ej. A1, B3">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Fecha de ingreso</label>
+            <input type="date" id="single-fecha">
+          </div>
+          <div class="form-group">
+            <label>Observación (opcional)</label>
+            <input type="text" id="single-obs" placeholder="Notas adicionales">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn-submit" onclick="submitSingle()">Guardar paquete</button>
+          <button class="btn-clear" onclick="clearSingle()">Limpiar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ingreso por lote</div>
+        <div class="form-group">
+          <label>Tracking numbers (uno por línea)</label>
+          <textarea class="batch-area" id="batch-trackings" placeholder="TBA123456789000&#10;TBA987654321000&#10;TBA111222333000"></textarea>
+          <div class="batch-hint">Pega o escribe un tracking number por línea. Se aplicará el mismo carrier, fila y fecha a todos.</div>
+        </div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Carrier</label>
+            <select id="batch-carrier">
+              <option value="">Seleccionar...</option>
+              <option value="Amazon">Amazon</option>
+              <option value="Shein">Shein</option>
+              <option value="eBay">eBay</option>
+              <option value="Temu">Temu</option>
+              <option value="AliExpress">AliExpress</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fila / Ubicación</label>
+            <input type="text" id="batch-fila" placeholder="ej. A1">
+          </div>
+          <div class="form-group">
+            <label>Fecha de ingreso</label>
+            <input type="date" id="batch-fecha">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn-submit" onclick="submitBatch()">Guardar lote</button>
+          <button class="btn-clear" onclick="clearBatch()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORICO -->
+    <div class="panel" id="panel-historico">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="section-title">Historial de paquetes</span>
+          <span class="count-badge" id="hist-count">0</span>
+        </div>
+        <button class="btn-sm btn-accent" onclick="exportExcel()">Exportar Excel</button>
+      </div>
+
+      <div class="table-toolbar">
+        <input type="text" id="filter-search" placeholder="Buscar tracking o carrier..." oninput="filterTable()">
+        <select id="filter-carrier" onchange="filterTable()">
+          <option value="">Todos los carriers</option>
+          <option value="Amazon">Amazon</option>
+          <option value="Shein">Shein</option>
+          <option value="eBay">eBay</option>
+          <option value="Temu">Temu</option>
+          <option value="AliExpress">AliExpress</option>
+          <option value="Otro">Otro</option>
+        </select>
+        <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
+        <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
+        <button class="btn-sm" onclick="clearFilters()">Limpiar filtros</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tracking Number</th>
+              <th>Carrier</th>
+              <th>Fila</th>
+              <th>Fecha Ingreso</th>
+              <th>Observación</th>
+              <th>Registrado por</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="hist-tbody">
+            <tr><td colspan="7"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://yvqfwwdamjzhwyqcrhlw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2cWZ3d2RhbWp6aHd5cWNyaGx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NzU0MzIsImV4cCI6MjA5MjU1MTQzMn0.bCDrGVcgjnUTHx2epUd5AvBvywcCS-t4ydI09KRriu0';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let allPaquetes = [];
+let filteredPaquetes = [];
+let currentPage = 1;
+const PAGE_SIZE = 25;
+
+// ---- AUTH ----
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('auth-msg').innerHTML = '';
+}
+
+function showAuthMsg(msg, type) {
+  document.getElementById('auth-msg').innerHTML = `<div class="msg ${type}">${msg}</div>`;
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) { showAuthMsg('Ingresa correo y contraseña.', 'error'); return; }
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if (error) { showAuthMsg(error.message, 'error'); return; }
+  initApp(data.user);
+}
+
+async function doRegister() {
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  const name = document.getElementById('reg-name').value.trim();
+  if (!email || !pass) { showAuthMsg('Ingresa correo y contraseña.', 'error'); return; }
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = 'Creando cuenta...';
+  const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+  btn.disabled = false; btn.textContent = 'Crear cuenta';
+  if (error) { showAuthMsg(error.message, 'error'); return; }
+  showAuthMsg('Cuenta creada. Revisa tu correo para confirmar.', 'success');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+function initApp(user) {
+  currentUser = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('user-email-badge').textContent = user.email;
+  setTodayDates();
+  loadDashboard();
+  loadHistorico();
+}
+
+// ---- UTILS ----
+function setTodayDates() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('single-fecha').value = today;
+  document.getElementById('batch-fecha').value = today;
+}
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function carrierClass(carrier) {
+  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress' };
+  return 'carrier-' + (map[carrier] || 'other');
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y,m,dd] = d.split('-');
+  return `${dd}/${m}/${y}`;
+}
+
+// ---- PANELS ----
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const idx = {dashboard:0, ingreso:1, historico:2}[name];
+  document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  if (name === 'historico') loadHistorico();
+  if (name === 'dashboard') loadDashboard();
+}
+
+// ---- DASHBOARD ----
+async function loadDashboard() {
+  const { data } = await sb.from('paquetes').select('*').order('created_at', { ascending: false });
+  if (!data) return;
+  const today = new Date().toISOString().split('T')[0];
+  const weekAgo = new Date(Date.now() - 7*86400000).toISOString().split('T')[0];
+  document.getElementById('stat-today').textContent = data.filter(p => p.fecha_ingreso === today).length;
+  document.getElementById('stat-week').textContent = data.filter(p => p.fecha_ingreso >= weekAgo).length;
+  document.getElementById('stat-total').textContent = data.length;
+  const carriers = [...new Set(data.map(p => p.carrier))].length;
+  document.getElementById('stat-carriers').textContent = carriers;
+  const recent = data.slice(0, 8);
+  const wrap = document.getElementById('recent-table-wrap');
+  if (recent.length === 0) {
+    wrap.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No hay paquetes aún. Ingresa el primero.</p></div>';
+    return;
+  }
+  wrap.innerHTML = `<div class="table-wrap" style="border:none;border-radius:0;">
+    <table>
+      <thead><tr><th>Tracking</th><th>Carrier</th><th>Fila</th><th>Fecha</th></tr></thead>
+      <tbody>${recent.map(p => `<tr>
+        <td><span class="tracking-code">${p.tracking_number}</span></td>
+        <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
+        <td>${p.fila || '—'}</td>
+        <td>${formatDate(p.fecha_ingreso)}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+// ---- INGRESO INDIVIDUAL ----
+async function submitSingle() {
+  const tracking = document.getElementById('single-tracking').value.trim();
+  const carrier = document.getElementById('single-carrier').value;
+  const fila = document.getElementById('single-fila').value.trim();
+  const fecha = document.getElementById('single-fecha').value;
+  const obs = document.getElementById('single-obs').value.trim();
+  if (!tracking) { toast('Ingresa el tracking number.', 'error'); return; }
+  if (!carrier) { toast('Selecciona el carrier.', 'error'); return; }
+  if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
+  const { error } = await sb.from('paquetes').insert({ tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, observacion: obs, creado_por: currentUser.id });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Paquete guardado correctamente.');
+  clearSingle();
+  loadDashboard();
+}
+
+function clearSingle() {
+  document.getElementById('single-tracking').value = '';
+  document.getElementById('single-carrier').value = '';
+  document.getElementById('single-fila').value = '';
+  document.getElementById('single-obs').value = '';
+  setTodayDates();
+}
+
+// ---- INGRESO LOTE ----
+async function submitBatch() {
+  const raw = document.getElementById('batch-trackings').value.trim();
+  const carrier = document.getElementById('batch-carrier').value;
+  const fila = document.getElementById('batch-fila').value.trim();
+  const fecha = document.getElementById('batch-fecha').value;
+  if (!raw) { toast('Pega al menos un tracking number.', 'error'); return; }
+  if (!carrier) { toast('Selecciona el carrier.', 'error'); return; }
+  if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (lines.length === 0) { toast('No se encontraron trackings válidos.', 'error'); return; }
+  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, creado_por: currentUser.id }));
+  const { error } = await sb.from('paquetes').insert(rows);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast(`${lines.length} paquete(s) guardados correctamente.`);
+  clearBatch();
+  loadDashboard();
+}
+
+function clearBatch() {
+  document.getElementById('batch-trackings').value = '';
+  document.getElementById('batch-carrier').value = '';
+  document.getElementById('batch-fila').value = '';
+  setTodayDates();
+}
+
+// ---- HISTORICO ----
+async function loadHistorico() {
+  document.getElementById('hist-tbody').innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
+  const { data, error } = await sb.from('paquetes').select('*').order('fecha_ingreso', { ascending: false }).order('created_at', { ascending: false });
+  if (error) { toast('Error al cargar historial.', 'error'); return; }
+  allPaquetes = data || [];
+  filteredPaquetes = [...allPaquetes];
+  currentPage = 1;
+  renderTable();
+}
+
+function filterTable() {
+  const search = document.getElementById('filter-search').value.toLowerCase();
+  const carrier = document.getElementById('filter-carrier').value;
+  const desde = document.getElementById('filter-desde').value;
+  const hasta = document.getElementById('filter-hasta').value;
+  filteredPaquetes = allPaquetes.filter(p => {
+    if (search && !p.tracking_number.toLowerCase().includes(search) && !p.carrier.toLowerCase().includes(search)) return false;
+    if (carrier && p.carrier !== carrier) return false;
+    if (desde && p.fecha_ingreso < desde) return false;
+    if (hasta && p.fecha_ingreso > hasta) return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function clearFilters() {
+  document.getElementById('filter-search').value = '';
+  document.getElementById('filter-carrier').value = '';
+  document.getElementById('filter-desde').value = '';
+  document.getElementById('filter-hasta').value = '';
+  filteredPaquetes = [...allPaquetes];
+  currentPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  document.getElementById('hist-count').textContent = filteredPaquetes.length;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filteredPaquetes.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('hist-tbody');
+  if (page.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = page.map(p => `<tr>
+      <td><span class="tracking-code">${p.tracking_number}</span></td>
+      <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
+      <td>${p.fila || '—'}</td>
+      <td>${formatDate(p.fecha_ingreso)}</td>
+      <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
+      <td style="color:var(--text3);font-size:12px;">${p.creado_por ? p.creado_por.substring(0,8)+'...' : '—'}</td>
+      <td><button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button></td>
+    </tr>`).join('');
+  }
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filteredPaquetes.length / PAGE_SIZE);
+  const pg = document.getElementById('pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Ant</button>`;
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || Math.abs(i - currentPage) <= 1) {
+      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    } else if (Math.abs(i - currentPage) === 2) {
+      html += `<span style="color:var(--text3)">...</span>`;
+    }
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>Sig →</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(n) {
+  currentPage = n;
+  renderTable();
+  document.querySelector('.table-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function deletePaquete(id) {
+  if (!confirm('¿Eliminar este paquete?')) return;
+  const { error } = await sb.from('paquetes').delete().eq('id', id);
+  if (error) { toast('Error al eliminar.', 'error'); return; }
+  toast('Paquete eliminado.');
+  allPaquetes = allPaquetes.filter(p => p.id !== id);
+  filteredPaquetes = filteredPaquetes.filter(p => p.id !== id);
+  renderTable();
+  loadDashboard();
+}
+
+// ---- EXCEL ----
+function exportExcel() {
+  if (filteredPaquetes.length === 0) { toast('No hay datos para exportar.', 'error'); return; }
+  const rows = filteredPaquetes.map(p => ({
+    'Tracking Number': p.tracking_number,
+    'Carrier': p.carrier,
+    'Fila': p.fila || '',
+    'Fecha Ingreso': formatDate(p.fecha_ingreso),
+    'Observación': p.observacion || '',
+    'Registrado': p.created_at ? new Date(p.created_at).toLocaleString('es-HN') : ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch: 30 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 25 }, { wch: 20 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Paquetes');
+  const fecha = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `sari_paqueteria_${fecha}.xlsx`);
+  toast('Excel exportado.');
+}
+
+// ---- INIT ----
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) {
+    initApp(data.session.user);
+  }
+});
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) initApp(session.user);
+  if (event === 'SIGNED_OUT') {
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+});
+</script>
+</body>
+</html>
