@@ -164,6 +164,19 @@
         <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <button class="btn-primary" onclick="doLogin()" id="btn-login">Entrar</button>
+      <div style="text-align:center;margin-top:12px;">
+        <button onclick="mostrarOlvidePass()" style="background:none;border:none;color:var(--accent-mid);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">¿Olvidaste tu contraseña?</button>
+      </div>
+    </div>
+    <div id="forgot-form" style="display:none">
+      <div class="form-group">
+        <label>Ingresa tu correo</label>
+        <input type="email" id="forgot-email" placeholder="correo@ejemplo.com">
+      </div>
+      <button class="btn-primary" onclick="doForgotPass()" id="btn-forgot">Enviar enlace de recuperación</button>
+      <div style="text-align:center;margin-top:12px;">
+        <button onclick="switchTab('login')" style="background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Volver al inicio de sesión</button>
+      </div>
     </div>
     <div id="register-form" style="display:none">
       <div class="form-group">
@@ -364,10 +377,10 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha Ingreso</th><th>Observación</th><th>Registrado por</th><th>Acciones</th></tr>
+            <tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha / Hora</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th><th>Acciones</th></tr>
           </thead>
           <tbody id="hist-tbody">
-            <tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
+            <tr><td colspan="9"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -433,7 +446,28 @@ function switchTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
   document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
   document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('forgot-form').style.display = 'none';
   document.getElementById('auth-msg').innerHTML = '';
+}
+
+function mostrarOlvidePass() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'block';
+  document.getElementById('auth-msg').innerHTML = '';
+}
+
+async function doForgotPass() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showAuthMsg('Ingresa tu correo.', 'error'); return; }
+  const btn = document.getElementById('btn-forgot');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://sari-paqueteria.vercel.app'
+  });
+  btn.disabled = false; btn.textContent = 'Enviar enlace de recuperación';
+  if (error) { showAuthMsg(error.message, 'error'); return; }
+  showAuthMsg('Correo enviado. Revisa tu bandeja de entrada.', 'success');
 }
 
 function showAuthMsg(msg, type) {
@@ -621,7 +655,8 @@ async function submitSingle() {
   if (!tracking) { toast('Ingresa el tracking number.', 'error'); return; }
   if (!carrier) { toast('Selecciona o escribe el carrier.', 'error'); return; }
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
-  const { error } = await sb.from('paquetes').insert({ tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre });
+  const horaActual = new Date().toTimeString().split(' ')[0];
+  const { error } = await sb.from('paquetes').insert({ tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, hora_ingreso: horaActual, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Paquete guardado correctamente.');
   clearSingle();
@@ -648,7 +683,8 @@ async function submitBatch() {
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   if (lines.length === 0) { toast('No se encontraron trackings válidos.', 'error'); return; }
-  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre }));
+  const horaActual = new Date().toTimeString().split(' ')[0];
+  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, hora_ingreso: horaActual, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre }));
   const { error } = await sb.from('paquetes').insert(rows);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast(`${lines.length} paquete(s) guardados correctamente.`);
@@ -707,15 +743,16 @@ function renderTable() {
   const page = filteredPaquetes.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('hist-tbody');
   if (page.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
   } else {
     tbody.innerHTML = page.map(p => `<tr>
       <td><span class="tracking-code">${p.tracking_number}</span></td>
       <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
       <td>${p.fila || '—'}</td>
-      <td>${formatDate(p.fecha_ingreso)}</td>
+      <td style="white-space:nowrap;font-size:13px;">${formatDate(p.fecha_ingreso)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</span></td>
       <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
       <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
+      <td style="color:var(--text3);font-size:12px;">${p.modificado_por_nombre || '—'}</td>
       <td style="display:flex;gap:6px;">
         <button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>
         <button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>
@@ -799,12 +836,12 @@ async function guardarEdicion() {
   if (!modalPaqueteId) return;
   const fila = document.getElementById('modal-fila').value.trim();
   const obs = document.getElementById('modal-obs').value.trim();
-  const { error } = await sb.from('paquetes').update({ fila, observacion: obs }).eq('id', modalPaqueteId);
+  const { error } = await sb.from('paquetes').update({ fila, observacion: obs, modificado_por_nombre: currentUser._nombre }).eq('id', modalPaqueteId);
   if (error) { toast('Error al guardar.', 'error'); return; }
   const idx = allPaquetes.findIndex(p => p.id === modalPaqueteId);
-  if (idx !== -1) { allPaquetes[idx].fila = fila; allPaquetes[idx].observacion = obs; }
+  if (idx !== -1) { allPaquetes[idx].fila = fila; allPaquetes[idx].observacion = obs; allPaquetes[idx].modificado_por_nombre = currentUser._nombre; }
   const fidx = filteredPaquetes.findIndex(p => p.id === modalPaqueteId);
-  if (fidx !== -1) { filteredPaquetes[fidx].fila = fila; filteredPaquetes[fidx].observacion = obs; }
+  if (fidx !== -1) { filteredPaquetes[fidx].fila = fila; filteredPaquetes[fidx].observacion = obs; filteredPaquetes[fidx].modificado_por_nombre = currentUser._nombre; }
   cerrarModal();
   renderTable();
   toast('Paquete actualizado correctamente.');
