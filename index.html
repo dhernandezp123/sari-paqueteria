@@ -99,6 +99,10 @@
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface2); }
   .actions-cell { vertical-align: middle !important; white-space: nowrap; }
+  .estado-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; white-space: nowrap; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; }
+  .estado-pendiente { background: var(--warning-bg); color: var(--warning); }
+  .estado-enproceso { background: var(--accent-light); color: var(--accent); }
+  .estado-resuelta { background: var(--success-bg); color: var(--success); }
   .tracking-code { font-family: 'DM Mono', monospace; font-size: 12.5px; color: var(--accent); background: var(--accent-light); padding: 3px 7px; border-radius: 5px; }
   .carrier-badge { font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
   .carrier-amazon { background: #FFF3E0; color: #E65100; }
@@ -222,6 +226,7 @@
     <button class="nav-item active" onclick="showPanel('dashboard')">Inicio</button>
     <button class="nav-item" onclick="showPanel('ingreso')">Ingresar paquetes</button>
     <button class="nav-item" onclick="showPanel('historico')">Historial</button>
+    <button class="nav-item" onclick="showPanel('incidencias')">Incidencias</button>
   </div>
 
   <div class="main">
@@ -371,9 +376,6 @@
           <option value="Temu">Temu</option>
           <option value="AliExpress">AliExpress</option>
           <option value="USPS">USPS</option>
-          <option value="FedEx">FedEx</option>
-          <option value="DHL">DHL</option>
-          <option value="Otro">Otro</option>
         </select>
         <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
         <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
@@ -390,6 +392,87 @@
         </table>
       </div>
       <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- INCIDENCIAS -->
+    <div class="panel" id="panel-incidencias">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="section-title">Incidencias</span>
+          <span class="count-badge" id="inc-count">0</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm btn-accent" onclick="exportIncidenciasExcel()">Exportar Excel</button>
+          <button class="btn-sm" style="background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bg);" onclick="exportIncidenciasPDF()">Exportar PDF</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Registrar nueva incidencia</div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Tracking number (opcional)</label>
+            <input type="text" id="inc-tracking" placeholder="Dejar vacío si es general">
+          </div>
+          <div class="form-group">
+            <label>Carrier</label>
+            <select id="inc-carrier">
+              <option value="">Seleccionar...</option>
+              <option value="Amazon">Amazon</option>
+              <option value="Shein">Shein</option>
+              <option value="eBay">eBay</option>
+              <option value="Temu">Temu</option>
+              <option value="AliExpress">AliExpress</option>
+              <option value="USPS">USPS</option>
+              <option value="FedEx">FedEx</option>
+              <option value="DHL">DHL</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tipo de incidencia</label>
+            <select id="inc-tipo">
+              <option value="">Seleccionar...</option>
+              <option value="Daño en paquete">Daño en paquete</option>
+              <option value="Paquete incompleto">Paquete incompleto</option>
+              <option value="Paquete extraviado">Paquete extraviado</option>
+              <option value="Carrier llegó tarde">Carrier llegó tarde</option>
+              <option value="Problema de etiqueta">Problema de etiqueta</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descripción / comentario</label>
+          <textarea class="batch-area" id="inc-descripcion" rows="2" placeholder="Describe la incidencia con detalle..."></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn-submit" onclick="submitIncidencia()">Registrar incidencia</button>
+          <button class="btn-clear" onclick="clearIncidencia()">Limpiar</button>
+        </div>
+      </div>
+      <div class="table-toolbar">
+        <input type="text" id="inc-filter-search" placeholder="Buscar tracking, carrier o tipo..." oninput="filterIncidencias()">
+        <select id="inc-filter-estado" onchange="filterIncidencias()">
+          <option value="">Todos los estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En proceso">En proceso</option>
+          <option value="Resuelta">Resuelta</option>
+        </select>
+        <input type="date" id="inc-filter-desde" onchange="filterIncidencias()" title="Desde">
+        <input type="date" id="inc-filter-hasta" onchange="filterIncidencias()" title="Hasta">
+        <button class="btn-sm" onclick="clearIncidenciasFiltros()">Limpiar filtros</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Fecha / Hora</th><th>Tracking</th><th>Carrier</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Reportado por</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="inc-tbody">
+            <tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="inc-pagination"></div>
     </div>
 
   </div>
@@ -570,10 +653,11 @@ function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  const idx = {dashboard:0, ingreso:1, historico:2}[name];
+  const idx = {dashboard:0, ingreso:1, historico:2, incidencias:3}[name];
   document.querySelectorAll('.nav-item')[idx].classList.add('active');
   if (name === 'historico') loadHistorico();
   if (name === 'dashboard') loadDashboard();
+  if (name === 'incidencias') loadIncidencias();
 }
 
 async function loadDashboard() {
@@ -660,6 +744,12 @@ async function submitSingle() {
   if (!tracking) { toast('Ingresa el tracking number.', 'error'); return; }
   if (!carrier) { toast('Selecciona o escribe el carrier.', 'error'); return; }
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
+  const { data: existing } = await sb.from('paquetes').select('fecha_ingreso, hora_ingreso').eq('tracking_number', tracking);
+  if (existing && existing.length > 0) {
+    const prev = existing[0];
+    const msg = `El tracking ${tracking} ya fue ingresado el ${formatDate(prev.fecha_ingreso)}${prev.hora_ingreso ? ' a las ' + prev.hora_ingreso.substring(0,5) : ''}. ¿Deseas guardarlo de todas formas?`;
+    if (!confirm(msg)) return;
+  }
   const horaActual = new Date().toTimeString().split(' ')[0];
   const { error } = await sb.from('paquetes').insert({ tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, hora_ingreso: horaActual, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
@@ -688,6 +778,15 @@ async function submitBatch() {
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   if (lines.length === 0) { toast('No se encontraron trackings válidos.', 'error'); return; }
+  const { data: existing } = await sb.from('paquetes').select('tracking_number, fecha_ingreso, hora_ingreso').in('tracking_number', lines);
+  const dupMap = {};
+  if (existing) existing.forEach(p => { dupMap[p.tracking_number] = p; });
+  const duplicados = lines.filter(t => dupMap[t]);
+  if (duplicados.length > 0) {
+    const lista = duplicados.map(t => `• ${t} (ingresado el ${formatDate(dupMap[t].fecha_ingreso)}${dupMap[t].hora_ingreso ? ' a las ' + dupMap[t].hora_ingreso.substring(0,5) : ''})`).join('\n');
+    const msg = `${duplicados.length} tracking(s) ya existen en el sistema:\n\n${lista}\n\n¿Deseas guardar el lote completo de todas formas?`;
+    if (!confirm(msg)) return;
+  }
   const horaActual = new Date().toTimeString().split(' ')[0];
   const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, hora_ingreso: horaActual, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre }));
   const { error } = await sb.from('paquetes').insert(rows);
@@ -902,6 +1001,175 @@ function exportPDF() {
   win.document.write(html);
   win.document.close();
   win.focus();
+  setTimeout(() => win.print(), 400);
+}
+
+// ---- INCIDENCIAS ----
+let allIncidencias = [];
+let filteredIncidencias = [];
+let incPage = 1;
+const INC_PAGE_SIZE = 25;
+
+function estadoClass(estado) {
+  const map = { 'Pendiente':'pendiente', 'En proceso':'enproceso', 'Resuelta':'resuelta' };
+  return map[estado] || 'pendiente';
+}
+
+async function submitIncidencia() {
+  const tracking = document.getElementById('inc-tracking').value.trim();
+  const carrier = document.getElementById('inc-carrier').value;
+  const tipo = document.getElementById('inc-tipo').value;
+  const desc = document.getElementById('inc-descripcion').value.trim();
+  if (!tipo) { toast('Selecciona el tipo de incidencia.', 'error'); return; }
+  const hora = new Date().toTimeString().split(' ')[0];
+  const fecha = new Date().toISOString().split('T')[0];
+  const { error } = await sb.from('incidencias').insert({ tracking_number: tracking || null, carrier: carrier || null, tipo, descripcion: desc || null, estado: 'Pendiente', fecha, hora, reportado_por_nombre: currentUser._nombre, creado_por: currentUser.id });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Incidencia registrada.');
+  clearIncidencia();
+  loadIncidencias();
+}
+
+function clearIncidencia() {
+  document.getElementById('inc-tracking').value = '';
+  document.getElementById('inc-carrier').value = '';
+  document.getElementById('inc-tipo').value = '';
+  document.getElementById('inc-descripcion').value = '';
+}
+
+async function loadIncidencias() {
+  document.getElementById('inc-tbody').innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
+  const { data, error } = await sb.from('incidencias').select('*').order('fecha', { ascending: false }).order('hora', { ascending: false });
+  if (error) { toast('Error al cargar incidencias.', 'error'); return; }
+  allIncidencias = data || [];
+  filteredIncidencias = [...allIncidencias];
+  incPage = 1;
+  renderIncidencias();
+}
+
+function filterIncidencias() {
+  const search = document.getElementById('inc-filter-search').value.toLowerCase();
+  const estado = document.getElementById('inc-filter-estado').value;
+  const desde = document.getElementById('inc-filter-desde').value;
+  const hasta = document.getElementById('inc-filter-hasta').value;
+  filteredIncidencias = allIncidencias.filter(i => {
+    if (search && !(i.tracking_number||'').toLowerCase().includes(search) && !(i.carrier||'').toLowerCase().includes(search) && !(i.tipo||'').toLowerCase().includes(search)) return false;
+    if (estado && i.estado !== estado) return false;
+    if (desde && i.fecha < desde) return false;
+    if (hasta && i.fecha > hasta) return false;
+    return true;
+  });
+  incPage = 1;
+  renderIncidencias();
+}
+
+function clearIncidenciasFiltros() {
+  document.getElementById('inc-filter-search').value = '';
+  document.getElementById('inc-filter-estado').value = '';
+  document.getElementById('inc-filter-desde').value = '';
+  document.getElementById('inc-filter-hasta').value = '';
+  filteredIncidencias = [...allIncidencias];
+  incPage = 1;
+  renderIncidencias();
+}
+
+function renderIncidencias() {
+  document.getElementById('inc-count').textContent = filteredIncidencias.length;
+  const start = (incPage - 1) * INC_PAGE_SIZE;
+  const page = filteredIncidencias.slice(start, start + INC_PAGE_SIZE);
+  const tbody = document.getElementById('inc-tbody');
+  if (page.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No hay incidencias registradas.</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = page.map(i => `<tr>
+      <td style="white-space:nowrap;font-size:13px;">${formatDate(i.fecha)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${i.hora ? i.hora.substring(0,5) : '—'}</span></td>
+      <td><span class="tracking-code" style="font-size:11px;">${i.tracking_number || '—'}</span></td>
+      <td>${i.carrier ? `<span class="carrier-badge ${carrierClass(i.carrier)}">${i.carrier}</span>` : '—'}</td>
+      <td style="font-size:13px;font-weight:500;">${i.tipo}</td>
+      <td style="color:var(--text2);font-size:13px;max-width:200px;">${i.descripcion || '—'}</td>
+      <td><button class="estado-badge estado-${estadoClass(i.estado)}" onclick="cambiarEstado('${i.id}','${i.estado}')">${i.estado}</button></td>
+      <td style="color:var(--text3);font-size:12px;">${i.reportado_por_nombre || '—'}</td>
+      <td class="actions-cell"><button class="btn-delete" onclick="deleteIncidencia('${i.id}')">Eliminar</button></td>
+    </tr>`).join('');
+  }
+  renderIncPagination();
+}
+
+async function cambiarEstado(id, estadoActual) {
+  const estados = ['Pendiente', 'En proceso', 'Resuelta'];
+  const siguiente = estados[(estados.indexOf(estadoActual) + 1) % estados.length];
+  const { error } = await sb.from('incidencias').update({ estado: siguiente }).eq('id', id);
+  if (error) { toast('Error al cambiar estado.', 'error'); return; }
+  const idx = allIncidencias.findIndex(i => i.id === id);
+  if (idx !== -1) allIncidencias[idx].estado = siguiente;
+  const fidx = filteredIncidencias.findIndex(i => i.id === id);
+  if (fidx !== -1) filteredIncidencias[fidx].estado = siguiente;
+  renderIncidencias();
+  toast(`Estado: ${siguiente}`);
+}
+
+async function deleteIncidencia(id) {
+  if (!confirm('¿Eliminar esta incidencia?')) return;
+  const { error } = await sb.from('incidencias').delete().eq('id', id);
+  if (error) { toast('Error al eliminar.', 'error'); return; }
+  allIncidencias = allIncidencias.filter(i => i.id !== id);
+  filteredIncidencias = filteredIncidencias.filter(i => i.id !== id);
+  renderIncidencias();
+  toast('Incidencia eliminada.');
+}
+
+function renderIncPagination() {
+  const total = Math.ceil(filteredIncidencias.length / INC_PAGE_SIZE);
+  const pg = document.getElementById('inc-pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goIncPage(${incPage-1})" ${incPage===1?'disabled':''}>← Ant</button>`;
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || Math.abs(i - incPage) <= 1) html += `<button class="page-btn ${i===incPage?'active':''}" onclick="goIncPage(${i})">${i}</button>`;
+    else if (Math.abs(i - incPage) === 2) html += `<span style="color:var(--text3)">...</span>`;
+  }
+  html += `<button class="page-btn" onclick="goIncPage(${incPage+1})" ${incPage===total?'disabled':''}>Sig →</button>`;
+  pg.innerHTML = html;
+}
+
+function goIncPage(n) { incPage = n; renderIncidencias(); }
+
+function exportIncidenciasExcel() {
+  if (filteredIncidencias.length === 0) { toast('No hay incidencias para exportar.', 'error'); return; }
+  const rows = filteredIncidencias.map(i => ({
+    'Fecha': formatDate(i.fecha), 'Hora': i.hora ? i.hora.substring(0,5) : '',
+    'Tracking': i.tracking_number || '', 'Carrier': i.carrier || '',
+    'Tipo': i.tipo, 'Descripción': i.descripcion || '',
+    'Estado': i.estado, 'Reportado por': i.reportado_por_nombre || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch:12 },{ wch:8 },{ wch:28 },{ wch:14 },{ wch:22 },{ wch:35 },{ wch:12 },{ wch:20 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Incidencias');
+  XLSX.writeFile(wb, `sari_incidencias_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('Excel exportado.');
+}
+
+function exportIncidenciasPDF() {
+  if (filteredIncidencias.length === 0) { toast('No hay incidencias para exportar.', 'error'); return; }
+  const fecha = new Date().toLocaleDateString('es-HN');
+  const rows = filteredIncidencias.map(i => `<tr>
+    <td>${formatDate(i.fecha)}<br><span style="color:#9E9D98;font-size:9px;">${i.hora ? i.hora.substring(0,5) : '—'}</span></td>
+    <td style="font-size:9px;">${i.tracking_number || '—'}</td>
+    <td>${i.carrier || '—'}</td>
+    <td>${i.tipo}</td>
+    <td>${i.descripcion || '—'}</td>
+    <td><span style="padding:2px 6px;border-radius:10px;font-weight:600;background:${i.estado==='Resuelta'?'#EAF3DE':i.estado==='En proceso'?'#E6EFF7':'#FAEEDA'};color:${i.estado==='Resuelta'?'#3B6D11':i.estado==='En proceso'?'#1A3A5C':'#854F0B'}">${i.estado}</span></td>
+    <td>${i.reportado_por_nombre || '—'}</td>
+  </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sari Express - Incidencias</title>
+  <style>body{font-family:Arial,sans-serif;font-size:10px;color:#1A1A18;padding:24px}.header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #a02f2f}.brand{font-size:18px;font-weight:bold;color:#a02f2f}.meta{font-size:11px;color:#6B6A65;text-align:right}table{width:100%;border-collapse:collapse}th{background:#a02f2f;color:white;padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase}td{padding:6px 8px;border-bottom:1px solid #E2E0D8;vertical-align:top}tr:nth-child(even) td{background:#F7F6F2}.footer{margin-top:16px;font-size:10px;color:#9E9D98;text-align:right}</style>
+  </head><body>
+  <div class="header"><div class="brand">Sari Express — Incidencias</div><div class="meta">Generado: ${fecha}<br>Total: ${filteredIncidencias.length}</div></div>
+  <table><thead><tr><th>Fecha/Hora</th><th>Tracking</th><th>Carrier</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Reportado por</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <div class="footer">Sari Express Forwarders</div></body></html>`;
+  const win = window.open('', '_blank');
+  win.document.write(html); win.document.close(); win.focus();
   setTimeout(() => win.print(), 400);
 }
 
