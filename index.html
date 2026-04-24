@@ -128,6 +128,16 @@
   .count-badge { font-size: 12px; background: var(--accent-light); color: var(--accent); padding: 3px 9px; border-radius: 20px; font-weight: 500; font-family: 'DM Mono', monospace; }
   .carrier-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; margin: 5px 0 3px; overflow: hidden; }
   .carrier-bar { height: 6px; border-radius: 4px; background: var(--accent-mid); transition: width 0.4s ease; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--surface); border-radius: var(--radius-lg); padding: 1.75rem; width: 100%; max-width: 460px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .modal-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .modal-subtitle { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
+  .btn-edit { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--accent-light); background: var(--accent-light); color: var(--accent); cursor: pointer; transition: all 0.15s; }
+  .btn-edit:hover { background: #d0e4f5; }
 </style>
 </head>
 <body>
@@ -331,7 +341,10 @@
           <span class="section-title">Historial de paquetes</span>
           <span class="count-badge" id="hist-count">0</span>
         </div>
-        <button class="btn-sm btn-accent" onclick="exportExcel()">Exportar Excel</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm btn-accent" onclick="exportExcel()">Exportar Excel</button>
+          <button class="btn-sm" style="background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bg);" onclick="exportPDF()">Exportar PDF</button>
+        </div>
       </div>
       <div class="table-toolbar">
         <input type="text" id="filter-search" placeholder="Buscar tracking o carrier..." oninput="filterTable()">
@@ -351,10 +364,10 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha Ingreso</th><th>Observación</th><th>Registrado por</th><th></th></tr>
+            <tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha Ingreso</th><th>Observación</th><th>Registrado por</th><th>Acciones</th></tr>
           </thead>
           <tbody id="hist-tbody">
-            <tr><td colspan="7"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
+            <tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -365,6 +378,26 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal-box">
+    <div class="modal-title">Editar paquete</div>
+    <div class="modal-subtitle" id="modal-tracking-label"></div>
+    <div class="form-group">
+      <label>Fila / Ubicación</label>
+      <input type="text" id="modal-fila" placeholder="ej. A1, B3">
+    </div>
+    <div class="form-group">
+      <label>Observación</label>
+      <textarea class="batch-area" id="modal-obs" rows="3" placeholder="Daños, novedades, comentarios..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-clear" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-submit" onclick="guardarEdicion()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL = 'https://yvqfwwdamjzhwyqcrhlw.supabase.co';
@@ -633,7 +666,7 @@ function clearBatch() {
 }
 
 async function loadHistorico() {
-  document.getElementById('hist-tbody').innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
+  document.getElementById('hist-tbody').innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
   const { data, error } = await sb.from('paquetes').select('*').order('fecha_ingreso', { ascending: false }).order('created_at', { ascending: false });
   if (error) { toast('Error al cargar historial.', 'error'); return; }
   allPaquetes = data || [];
@@ -674,7 +707,7 @@ function renderTable() {
   const page = filteredPaquetes.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('hist-tbody');
   if (page.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
   } else {
     tbody.innerHTML = page.map(p => `<tr>
       <td><span class="tracking-code">${p.tracking_number}</span></td>
@@ -683,7 +716,10 @@ function renderTable() {
       <td>${formatDate(p.fecha_ingreso)}</td>
       <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
       <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
-      <td><button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>
+        <button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>
+      </td>
     </tr>`).join('');
   }
   renderPagination();
@@ -741,6 +777,82 @@ function exportExcel() {
   toast('Excel exportado.');
 }
 
+// ---- MODAL EDITAR ----
+let modalPaqueteId = null;
+
+function abrirModal(id) {
+  const p = allPaquetes.find(x => x.id === id);
+  if (!p) return;
+  modalPaqueteId = id;
+  document.getElementById('modal-tracking-label').textContent = p.tracking_number;
+  document.getElementById('modal-fila').value = p.fila || '';
+  document.getElementById('modal-obs').value = p.observacion || '';
+  document.getElementById('modal-editar').classList.add('open');
+}
+
+function cerrarModal() {
+  document.getElementById('modal-editar').classList.remove('open');
+  modalPaqueteId = null;
+}
+
+async function guardarEdicion() {
+  if (!modalPaqueteId) return;
+  const fila = document.getElementById('modal-fila').value.trim();
+  const obs = document.getElementById('modal-obs').value.trim();
+  const { error } = await sb.from('paquetes').update({ fila, observacion: obs }).eq('id', modalPaqueteId);
+  if (error) { toast('Error al guardar.', 'error'); return; }
+  const idx = allPaquetes.findIndex(p => p.id === modalPaqueteId);
+  if (idx !== -1) { allPaquetes[idx].fila = fila; allPaquetes[idx].observacion = obs; }
+  const fidx = filteredPaquetes.findIndex(p => p.id === modalPaqueteId);
+  if (fidx !== -1) { filteredPaquetes[fidx].fila = fila; filteredPaquetes[fidx].observacion = obs; }
+  cerrarModal();
+  renderTable();
+  toast('Paquete actualizado correctamente.');
+}
+
+// ---- EXPORTAR PDF ----
+function exportPDF() {
+  if (filteredPaquetes.length === 0) { toast('No hay datos para exportar.', 'error'); return; }
+  const fecha = new Date().toLocaleDateString('es-HN');
+  const rows = filteredPaquetes.map(p => `
+    <tr>
+      <td>${p.tracking_number}</td>
+      <td>${p.carrier}</td>
+      <td>${p.fila || '—'}</td>
+      <td>${formatDate(p.fecha_ingreso)}</td>
+      <td>${p.observacion || '—'}</td>
+      <td>${p.registrado_por_nombre || '—'}</td>
+    </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sari Express - Paquetería</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #1A1A18; padding: 24px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #1A3A5C; }
+    .brand { font-size: 18px; font-weight: bold; color: #1A3A5C; }
+    .meta { font-size: 11px; color: #6B6A65; text-align: right; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #1A3A5C; color: white; padding: 7px 10px; text-align: left; font-size: 10px; text-transform: uppercase; }
+    td { padding: 7px 10px; border-bottom: 1px solid #E2E0D8; }
+    tr:nth-child(even) td { background: #F7F6F2; }
+    .footer { margin-top: 16px; font-size: 10px; color: #9E9D98; text-align: right; }
+  </style></head><body>
+  <div class="header">
+    <div class="brand">Sari Express — Control de Paquetería</div>
+    <div class="meta">Generado: ${fecha}<br>Total: ${filteredPaquetes.length} paquetes</div>
+  </div>
+  <table>
+    <thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha</th><th>Observación</th><th>Registrado por</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">Sari Express Forwarders</div>
+  </body></html>`;
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 400);
+}
+
 applyLogo();
 sb.auth.getSession().then(({ data }) => {
   if (data.session) initApp(data.session.user);
@@ -751,6 +863,10 @@ sb.auth.onAuthStateChange((event, session) => {
     document.getElementById('app-screen').style.display = 'none';
     document.getElementById('auth-screen').style.display = 'flex';
   }
+});
+
+document.getElementById('modal-editar').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
 });
 </script>
 </body>
