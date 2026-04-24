@@ -106,8 +106,6 @@
   .carrier-temu { background: #E3F2FD; color: #1565C0; }
   .carrier-aliexpress { background: #FFF8E1; color: #F57F17; }
   .carrier-usps { background: #E8EAF6; color: #283593; }
-  .carrier-fedex { background: #EDE7F6; color: #4527A0; }
-  .carrier-dhl { background: #FFF8E1; color: #E65100; }
   .carrier-other { background: var(--surface2); color: var(--text2); }
   .btn-delete { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--danger-bg); background: var(--danger-bg); color: var(--danger); cursor: pointer; transition: all 0.15s; }
   .btn-delete:hover { background: #F7C1C1; }
@@ -283,8 +281,6 @@
               <option value="Temu">Temu</option>
               <option value="AliExpress">AliExpress</option>
               <option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option>
-              <option value="DHL">DHL</option>
               <option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="single-carrier-custom-wrap">
@@ -330,8 +326,6 @@
               <option value="Temu">Temu</option>
               <option value="AliExpress">AliExpress</option>
               <option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option>
-              <option value="DHL">DHL</option>
               <option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="batch-carrier-custom-wrap">
@@ -376,8 +370,6 @@
           <option value="Temu">Temu</option>
           <option value="AliExpress">AliExpress</option>
           <option value="USPS">USPS</option>
-          <option value="FedEx">FedEx</option>
-          <option value="DHL">DHL</option>
         </select>
         <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
         <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
@@ -560,7 +552,7 @@ function toast(msg, type='success') {
 }
 
 function carrierClass(carrier) {
-const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps', FedEx:'fedex', DHL:'dhl' };
+  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps' };
   return 'carrier-' + (map[carrier] || 'other');
 }
 
@@ -849,12 +841,18 @@ async function guardarEdicion() {
   if (!modalPaqueteId) return;
   const fila = document.getElementById('modal-fila').value.trim();
   const obs = document.getElementById('modal-obs').value.trim();
-  const { error } = await sb.from('paquetes').update({ fila, observacion: obs, modificado_por_nombre: currentUser._nombre }).eq('id', modalPaqueteId);
-  if (error) { toast('Error al guardar.', 'error'); return; }
+  const nombre = currentUser._nombre || currentUser.email;
+  const { data, error } = await sb.from('paquetes')
+    .update({ fila: fila, observacion: obs, modificado_por_nombre: nombre })
+    .eq('id', modalPaqueteId)
+    .select();
+  if (error) { toast('Error: ' + error.message, 'error'); console.error(error); return; }
+  if (!data || data.length === 0) { toast('No se pudo actualizar. Verifica permisos.', 'error'); return; }
+  const updated = data[0];
   const idx = allPaquetes.findIndex(p => p.id === modalPaqueteId);
-  if (idx !== -1) { allPaquetes[idx].fila = fila; allPaquetes[idx].observacion = obs; allPaquetes[idx].modificado_por_nombre = currentUser._nombre; }
+  if (idx !== -1) allPaquetes[idx] = { ...allPaquetes[idx], ...updated };
   const fidx = filteredPaquetes.findIndex(p => p.id === modalPaqueteId);
-  if (fidx !== -1) { filteredPaquetes[fidx].fila = fila; filteredPaquetes[fidx].observacion = obs; filteredPaquetes[fidx].modificado_por_nombre = currentUser._nombre; }
+  if (fidx !== -1) filteredPaquetes[fidx] = { ...filteredPaquetes[fidx], ...updated };
   cerrarModal();
   renderTable();
   toast('Paquete actualizado correctamente.');
