@@ -100,11 +100,11 @@
   .tracking-code { font-family: 'DM Mono', monospace; font-size: 12.5px; color: var(--accent); background: var(--accent-light); padding: 3px 7px; border-radius: 5px; }
   .carrier-badge { font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
   .carrier-amazon { background: #FFF3E0; color: #E65100; }
-  .carrier-usps { background: #E3F2FD; color: #333366; }
   .carrier-shein { background: #FCE4EC; color: #880E4F; }
   .carrier-ebay { background: #E8F5E9; color: #2E7D32; }
   .carrier-temu { background: #E3F2FD; color: #1565C0; }
   .carrier-aliexpress { background: #FFF8E1; color: #F57F17; }
+  .carrier-usps { background: #E8EAF6; color: #283593; }
   .carrier-other { background: var(--surface2); color: var(--text2); }
   .btn-delete { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--danger-bg); background: var(--danger-bg); color: var(--danger); cursor: pointer; transition: all 0.15s; }
   .btn-delete:hover { background: #F7C1C1; }
@@ -165,8 +165,12 @@
         <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres">
       </div>
       <div class="form-group">
-        <label>Nombre completo</label>
-        <input type="text" id="reg-name" placeholder="Tu nombre">
+        <label>Nombre</label>
+        <input type="text" id="reg-nombre" placeholder="Tu nombre">
+      </div>
+      <div class="form-group">
+        <label>Apellido</label>
+        <input type="text" id="reg-apellido" placeholder="Tu apellido">
       </div>
       <button class="btn-primary" onclick="doRegister()" id="btn-register">Crear cuenta</button>
     </div>
@@ -248,11 +252,11 @@
             <select id="single-carrier" onchange="toggleCustomCarrier('single')">
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option>
-             <option value="USPS">USPS</option>
               <option value="Shein">Shein</option>
               <option value="eBay">eBay</option>
               <option value="Temu">Temu</option>
               <option value="AliExpress">AliExpress</option>
+              <option value="USPS">USPS</option>
               <option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="single-carrier-custom-wrap">
@@ -293,11 +297,11 @@
             <select id="batch-carrier" onchange="toggleCustomCarrier('batch')">
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option>
-             <option value="USPS">USPS</option>
               <option value="Shein">Shein</option>
               <option value="eBay">eBay</option>
               <option value="Temu">Temu</option>
               <option value="AliExpress">AliExpress</option>
+              <option value="USPS">USPS</option>
               <option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="batch-carrier-custom-wrap">
@@ -338,6 +342,7 @@
           <option value="eBay">eBay</option>
           <option value="Temu">Temu</option>
           <option value="AliExpress">AliExpress</option>
+          <option value="USPS">USPS</option>
         </select>
         <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
         <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
@@ -417,11 +422,14 @@ async function doLogin() {
 async function doRegister() {
   const email = document.getElementById('reg-email').value.trim();
   const pass = document.getElementById('reg-pass').value;
-  const name = document.getElementById('reg-name').value.trim();
+  const nombre = document.getElementById('reg-nombre').value.trim();
+  const apellido = document.getElementById('reg-apellido').value.trim();
+  const fullName = [nombre, apellido].filter(Boolean).join(' ');
   if (!email || !pass) { showAuthMsg('Ingresa correo y contraseña.', 'error'); return; }
+  if (!fullName) { showAuthMsg('Ingresa tu nombre y apellido.', 'error'); return; }
   const btn = document.getElementById('btn-register');
   btn.disabled = true; btn.textContent = 'Creando cuenta...';
-  const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+  const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: fullName } } });
   btn.disabled = false; btn.textContent = 'Crear cuenta';
   if (error) { showAuthMsg(error.message, 'error'); return; }
   showAuthMsg('Cuenta creada. Revisa tu correo para confirmar.', 'success');
@@ -436,9 +444,10 @@ async function doLogout() {
 
 function initApp(user) {
   currentUser = user;
+  currentUser._nombre = user.user_metadata?.full_name || user.email;
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
-  document.getElementById('user-email-badge').textContent = user.email;
+  document.getElementById('user-email-badge').textContent = currentUser._nombre;
   applyLogo();
   setTodayDates();
   loadDashboard();
@@ -475,7 +484,7 @@ function toast(msg, type='success') {
 }
 
 function carrierClass(carrier) {
-  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress' };
+  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps' };
   return 'carrier-' + (map[carrier] || 'other');
 }
 
@@ -579,7 +588,7 @@ async function submitSingle() {
   if (!tracking) { toast('Ingresa el tracking number.', 'error'); return; }
   if (!carrier) { toast('Selecciona o escribe el carrier.', 'error'); return; }
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
-  const { error } = await sb.from('paquetes').insert({ tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, observacion: obs, creado_por: currentUser.id });
+  const { error } = await sb.from('paquetes').insert({ tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Paquete guardado correctamente.');
   clearSingle();
@@ -606,7 +615,7 @@ async function submitBatch() {
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   if (lines.length === 0) { toast('No se encontraron trackings válidos.', 'error'); return; }
-  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, creado_por: currentUser.id }));
+  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre }));
   const { error } = await sb.from('paquetes').insert(rows);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast(`${lines.length} paquete(s) guardados correctamente.`);
@@ -673,7 +682,7 @@ function renderTable() {
       <td>${p.fila || '—'}</td>
       <td>${formatDate(p.fecha_ingreso)}</td>
       <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
-      <td style="color:var(--text3);font-size:12px;">${p.creado_por ? p.creado_por.substring(0,8)+'...' : '—'}</td>
+      <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
       <td><button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button></td>
     </tr>`).join('');
   }
