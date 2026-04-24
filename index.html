@@ -106,6 +106,8 @@
   .carrier-temu { background: #E3F2FD; color: #1565C0; }
   .carrier-aliexpress { background: #FFF8E1; color: #F57F17; }
   .carrier-usps { background: #E8EAF6; color: #283593; }
+  .carrier-fedex { background: #EDE7F6; color: #4527A0; }
+  .carrier-dhl { background: #FFF8E1; color: #E65100; }
   .carrier-other { background: var(--surface2); color: var(--text2); }
   .btn-delete { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--danger-bg); background: var(--danger-bg); color: var(--danger); cursor: pointer; transition: all 0.15s; }
   .btn-delete:hover { background: #F7C1C1; }
@@ -281,6 +283,8 @@
               <option value="Temu">Temu</option>
               <option value="AliExpress">AliExpress</option>
               <option value="USPS">USPS</option>
+              <option value="FedEx">FedEx</option>
+              <option value="DHL">DHL</option>
               <option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="single-carrier-custom-wrap">
@@ -326,6 +330,8 @@
               <option value="Temu">Temu</option>
               <option value="AliExpress">AliExpress</option>
               <option value="USPS">USPS</option>
+              <option value="FedEx">FedEx</option>
+              <option value="DHL">DHL</option>
               <option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="batch-carrier-custom-wrap">
@@ -370,6 +376,8 @@
           <option value="Temu">Temu</option>
           <option value="AliExpress">AliExpress</option>
           <option value="USPS">USPS</option>
+          <option value="FedEx">FedEx</option>
+          <option value="DHL">DHL</option>
         </select>
         <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
         <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
@@ -552,7 +560,7 @@ function toast(msg, type='success') {
 }
 
 function carrierClass(carrier) {
-  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps' };
+const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps', FedEx:'fedex', DHL:'dhl' };
   return 'carrier-' + (map[carrier] || 'other');
 }
 
