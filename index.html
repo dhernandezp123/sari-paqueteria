@@ -97,6 +97,7 @@
   tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface2); }
+  .actions-cell { vertical-align: middle !important; white-space: nowrap; }
   .tracking-code { font-family: 'DM Mono', monospace; font-size: 12.5px; color: var(--accent); background: var(--accent-light); padding: 3px 7px; border-radius: 5px; }
   .carrier-badge { font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
   .carrier-amazon { background: #FFF3E0; color: #E65100; }
@@ -753,9 +754,11 @@ function renderTable() {
       <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
       <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
       <td style="color:var(--text3);font-size:12px;">${p.modificado_por_nombre || '—'}</td>
-      <td style="display:flex;gap:6px;">
-        <button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>
-        <button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>
+      <td class="actions-cell">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>
+          <button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>
+        </div>
       </td>
     </tr>`).join('');
   }
@@ -802,11 +805,13 @@ function exportExcel() {
     'Carrier': p.carrier,
     'Fila': p.fila || '',
     'Fecha Ingreso': formatDate(p.fecha_ingreso),
+    'Hora Ingreso': p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '',
     'Observación': p.observacion || '',
-    'Registrado': p.created_at ? new Date(p.created_at).toLocaleString('es-HN') : ''
+    'Registrado por': p.registrado_por_nombre || '',
+    'Modificado por': p.modificado_por_nombre || ''
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{ wch: 30 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 25 }, { wch: 20 }];
+  ws['!cols'] = [{ wch: 30 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 10 }, { wch: 25 }, { wch: 20 }, { wch: 20 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Paquetes');
   const fecha = new Date().toISOString().split('T')[0];
@@ -847,7 +852,6 @@ async function guardarEdicion() {
   toast('Paquete actualizado correctamente.');
 }
 
-// ---- EXPORTAR PDF ----
 function exportPDF() {
   if (filteredPaquetes.length === 0) { toast('No hay datos para exportar.', 'error'); return; }
   const fecha = new Date().toLocaleDateString('es-HN');
@@ -856,20 +860,21 @@ function exportPDF() {
       <td>${p.tracking_number}</td>
       <td>${p.carrier}</td>
       <td>${p.fila || '—'}</td>
-      <td>${formatDate(p.fecha_ingreso)}</td>
+      <td>${formatDate(p.fecha_ingreso)}<br><span style="color:#9E9D98;font-size:10px;">${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</span></td>
       <td>${p.observacion || '—'}</td>
       <td>${p.registrado_por_nombre || '—'}</td>
+      <td>${p.modificado_por_nombre || '—'}</td>
     </tr>`).join('');
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Sari Express - Paquetería</title>
   <style>
-    body { font-family: Arial, sans-serif; font-size: 11px; color: #1A1A18; padding: 24px; }
+    body { font-family: Arial, sans-serif; font-size: 10px; color: #1A1A18; padding: 24px; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #1A3A5C; }
     .brand { font-size: 18px; font-weight: bold; color: #1A3A5C; }
     .meta { font-size: 11px; color: #6B6A65; text-align: right; }
     table { width: 100%; border-collapse: collapse; }
-    th { background: #1A3A5C; color: white; padding: 7px 10px; text-align: left; font-size: 10px; text-transform: uppercase; }
-    td { padding: 7px 10px; border-bottom: 1px solid #E2E0D8; }
+    th { background: #1A3A5C; color: white; padding: 6px 8px; text-align: left; font-size: 9px; text-transform: uppercase; }
+    td { padding: 6px 8px; border-bottom: 1px solid #E2E0D8; vertical-align: top; }
     tr:nth-child(even) td { background: #F7F6F2; }
     .footer { margin-top: 16px; font-size: 10px; color: #9E9D98; text-align: right; }
   </style></head><body>
@@ -878,7 +883,7 @@ function exportPDF() {
     <div class="meta">Generado: ${fecha}<br>Total: ${filteredPaquetes.length} paquetes</div>
   </div>
   <table>
-    <thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha</th><th>Observación</th><th>Registrado por</th></tr></thead>
+    <thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha / Hora</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
   <div class="footer">Sari Express Forwarders</div>
