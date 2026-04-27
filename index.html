@@ -628,7 +628,11 @@ function getCarrierValue(prefix) {
 function setTodayDates() {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('single-fecha').value = today;
+  document.getElementById('single-fecha').max = today;
+  document.getElementById('single-fecha').min = today;
   document.getElementById('batch-fecha').value = today;
+  document.getElementById('batch-fecha').max = today;
+  document.getElementById('batch-fecha').min = today;
 }
 
 function toast(msg, type='success') {
