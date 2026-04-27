@@ -16,15 +16,15 @@
     --accent: #1A3A5C; --accent-light: #E6EFF7; --accent-mid: #378ADD;
     --success: #3B6D11; --success-bg: #EAF3DE;
     --danger: #A32D2D; --danger-bg: #FCEBEB;
+    --warning: #854F0B; --warning-bg: #FAEEDA;
     --radius: 10px; --radius-lg: 14px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
-
-  #auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background: var(--bg); }
+  #auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
   .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; width: 100%; max-width: 400px; box-shadow: var(--shadow); }
   .auth-logo { text-align: center; margin-bottom: 2rem; }
   .auth-logo img { height: 56px; object-fit: contain; margin-bottom: 8px; display: block; margin-left: auto; margin-right: auto; }
-  .auth-logo .brand { font-size: 22px; font-weight: 600; color: var(--accent); letter-spacing: -0.5px; }
+  .auth-logo .brand { font-size: 22px; font-weight: 600; color: var(--accent); }
   .auth-logo .sub { font-size: 13px; color: var(--text3); margin-top: 4px; }
   .auth-tabs { display: flex; background: var(--surface2); border-radius: var(--radius); padding: 3px; margin-bottom: 1.5rem; }
   .auth-tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text2); transition: all 0.15s; border: none; background: transparent; }
@@ -39,28 +39,30 @@
   .msg { padding: 10px 12px; border-radius: var(--radius); font-size: 13px; margin-top: 1rem; }
   .msg.error { background: var(--danger-bg); color: var(--danger); }
   .msg.success { background: var(--success-bg); color: var(--success); }
-
   #app-screen { display: none; min-height: 100vh; }
   .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .topbar-left { display: flex; align-items: center; gap: 12px; }
   .topbar-logo { height: 32px; object-fit: contain; }
   .topbar-brand { font-size: 16px; font-weight: 600; color: var(--accent); }
   .topbar-sep { color: var(--border); font-size: 18px; }
-  .topbar-page { font-size: 14px; color: var(--text2); }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
   .user-badge { font-size: 13px; color: var(--text2); background: var(--surface2); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border); }
+  .rol-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .rol-admin { background: #F3E8FF; color: #6B21A8; }
+  .rol-supervisor { background: var(--accent-light); color: var(--accent); }
+  .rol-agente { background: var(--success-bg); color: var(--success); }
   .btn-sm { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); background: var(--surface); color: var(--text2); }
   .btn-sm:hover { background: var(--surface2); color: var(--text); }
   .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
   .btn-accent:hover { opacity: 0.9; background: var(--accent); color: white; }
-  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; }
-  .nav-item { padding: 12px 16px; font-size: 14px; font-weight: 500; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; overflow-x: auto; }
+  .nav-item { padding: 12px 16px; font-size: 14px; font-weight: 500; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; }
   .nav-item.active { color: var(--accent); border-bottom-color: var(--accent); }
   .nav-item:hover { color: var(--text); }
-  .main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+  .nav-item.hidden { display: none; }
+  .main { padding: 1.5rem; max-width: 1300px; margin: 0 auto; }
   .panel { display: none; }
   .panel.active { display: block; }
-
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; }
   .stat-label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
@@ -68,10 +70,8 @@
   .stat-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
   .stat-delta-up { font-size: 12px; color: var(--success); margin-top: 3px; font-weight: 500; }
   .stat-delta-down { font-size: 12px; color: var(--danger); margin-top: 3px; font-weight: 500; }
-
   .dash-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
   @media (max-width: 700px) { .dash-row { grid-template-columns: 1fr; } .topbar-page { display: none; } }
-
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
   .card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -84,10 +84,8 @@
   .batch-area { width: 100%; min-height: 120px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); background: var(--surface); resize: vertical; outline: none; line-height: 1.6; }
   .batch-area:focus { border-color: var(--accent-mid); }
   .batch-hint { font-size: 12px; color: var(--text3); margin-top: 6px; }
-
   .carrier-custom-wrap { display: none; margin-top: 8px; }
   .carrier-custom-wrap input { width: 100%; padding: 8px 12px; border: 1px solid var(--accent-mid); border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--surface); outline: none; }
-
   .table-toolbar { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
   .table-toolbar input, .table-toolbar select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--surface); color: var(--text); outline: none; }
   .table-toolbar input:focus, .table-toolbar select:focus { border-color: var(--accent-mid); }
@@ -99,10 +97,6 @@
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface2); }
   .actions-cell { vertical-align: middle !important; white-space: nowrap; }
-  .estado-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; white-space: nowrap; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; }
-  .estado-pendiente { background: var(--warning-bg); color: var(--warning); }
-  .estado-enproceso { background: var(--accent-light); color: var(--accent); }
-  .estado-resuelta { background: var(--success-bg); color: var(--success); }
   .tracking-code { font-family: 'DM Mono', monospace; font-size: 12.5px; color: var(--accent); background: var(--accent-light); padding: 3px 7px; border-radius: 5px; }
   .carrier-badge { font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
   .carrier-amazon { background: #FFF3E0; color: #E65100; }
@@ -111,9 +105,14 @@
   .carrier-temu { background: #E3F2FD; color: #1565C0; }
   .carrier-aliexpress { background: #FFF8E1; color: #F57F17; }
   .carrier-usps { background: #E8EAF6; color: #283593; }
+  .carrier-fedex { background: #EDE7F6; color: #4527A0; }
+  .carrier-dhl { background: #FFF8E1; color: #E65100; }
   .carrier-other { background: var(--surface2); color: var(--text2); }
+  .btn-edit { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--accent-light); background: var(--accent-light); color: var(--accent); cursor: pointer; transition: all 0.15s; }
+  .btn-edit:hover { background: #d0e4f5; }
   .btn-delete { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--danger-bg); background: var(--danger-bg); color: var(--danger); cursor: pointer; transition: all 0.15s; }
   .btn-delete:hover { background: #F7C1C1; }
+  .btn-disabled { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--border); background: var(--surface2); color: var(--text3); cursor: not-allowed; }
   .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text3); }
   .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4; }
   .empty-state p { font-size: 14px; }
@@ -122,6 +121,21 @@
   .page-btn:hover { background: var(--surface2); }
   .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
   .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .carrier-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; margin: 5px 0 3px; overflow: hidden; }
+  .carrier-bar { height: 6px; border-radius: 4px; background: var(--accent-mid); transition: width 0.4s ease; }
+  .estado-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; white-space: nowrap; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; }
+  .estado-pendiente { background: var(--warning-bg); color: var(--warning); }
+  .estado-enproceso { background: var(--accent-light); color: var(--accent); }
+  .estado-resuelta { background: var(--success-bg); color: var(--success); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--surface); border-radius: var(--radius-lg); padding: 1.75rem; width: 100%; max-width: 460px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .modal-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .modal-subtitle { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .count-badge { font-size: 12px; background: var(--accent-light); color: var(--accent); padding: 3px 9px; border-radius: 20px; font-weight: 500; font-family: 'DM Mono', monospace; }
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: white; padding: 12px 18px; border-radius: var(--radius); font-size: 14px; font-weight: 500; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.25s ease; max-width: 320px; }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { background: var(--success); }
@@ -129,21 +143,16 @@
   .loading { display: flex; align-items: center; gap: 8px; color: var(--text2); font-size: 14px; padding: 2rem 0; justify-content: center; }
   .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent-mid); border-radius: 50%; animation: spin 0.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .section-title { font-size: 16px; font-weight: 600; color: var(--text); }
-  .count-badge { font-size: 12px; background: var(--accent-light); color: var(--accent); padding: 3px 9px; border-radius: 20px; font-weight: 500; font-family: 'DM Mono', monospace; }
-  .carrier-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; margin: 5px 0 3px; overflow: hidden; }
-  .carrier-bar { height: 6px; border-radius: 4px; background: var(--accent-mid); transition: width 0.4s ease; }
-
-  /* MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
-  .modal-overlay.open { display: flex; }
-  .modal-box { background: var(--surface); border-radius: var(--radius-lg); padding: 1.75rem; width: 100%; max-width: 460px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
-  .modal-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .modal-subtitle { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
-  .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
-  .btn-edit { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--accent-light); background: var(--accent-light); color: var(--accent); cursor: pointer; transition: all 0.15s; }
-  .btn-edit:hover { background: #d0e4f5; }
+  /* LOGS */
+  .log-row { cursor: pointer; }
+  .log-row:hover td { background: var(--surface2); }
+  .log-accion-ingreso { background: var(--success-bg); color: var(--success); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .log-accion-edicion { background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .log-accion-eliminacion { background: var(--danger-bg); color: var(--danger); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .log-detail { display: none; background: var(--surface2) !important; }
+  .log-detail td { padding: 12px 20px; font-size: 12px; color: var(--text2); }
+  .log-detail.open { display: table-row; }
+  .lote-chip { display: inline-block; font-family: 'DM Mono', monospace; font-size: 11px; background: var(--surface); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; margin: 2px; }
 </style>
 </head>
 <body>
@@ -161,46 +170,25 @@
       <button class="auth-tab" onclick="switchTab('register')">Registrarse</button>
     </div>
     <div id="login-form">
-      <div class="form-group">
-        <label>Correo electrónico</label>
-        <input type="email" id="login-email" placeholder="correo@ejemplo.com">
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
+      <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email" placeholder="correo@ejemplo.com"></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="btn-primary" onclick="doLogin()" id="btn-login">Entrar</button>
       <div style="text-align:center;margin-top:12px;">
         <button onclick="mostrarOlvidePass()" style="background:none;border:none;color:var(--accent-mid);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">¿Olvidaste tu contraseña?</button>
       </div>
     </div>
     <div id="forgot-form" style="display:none">
-      <div class="form-group">
-        <label>Ingresa tu correo</label>
-        <input type="email" id="forgot-email" placeholder="correo@ejemplo.com">
-      </div>
+      <div class="form-group"><label>Ingresa tu correo</label><input type="email" id="forgot-email" placeholder="correo@ejemplo.com"></div>
       <button class="btn-primary" onclick="doForgotPass()" id="btn-forgot">Enviar enlace de recuperación</button>
       <div style="text-align:center;margin-top:12px;">
         <button onclick="switchTab('login')" style="background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Volver al inicio de sesión</button>
       </div>
     </div>
     <div id="register-form" style="display:none">
-      <div class="form-group">
-        <label>Correo electrónico</label>
-        <input type="email" id="reg-email" placeholder="correo@ejemplo.com">
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres">
-      </div>
-      <div class="form-group">
-        <label>Nombre</label>
-        <input type="text" id="reg-nombre" placeholder="Tu nombre">
-      </div>
-      <div class="form-group">
-        <label>Apellido</label>
-        <input type="text" id="reg-apellido" placeholder="Tu apellido">
-      </div>
+      <div class="form-group"><label>Correo electrónico</label><input type="email" id="reg-email" placeholder="correo@ejemplo.com"></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"></div>
+      <div class="form-group"><label>Nombre</label><input type="text" id="reg-nombre" placeholder="Tu nombre"></div>
+      <div class="form-group"><label>Apellido</label><input type="text" id="reg-apellido" placeholder="Tu apellido"></div>
       <button class="btn-primary" onclick="doRegister()" id="btn-register">Crear cuenta</button>
     </div>
     <div id="auth-msg"></div>
@@ -214,57 +202,34 @@
       <img id="topbar-logo-img" src="" alt="" class="topbar-logo" style="display:none;">
       <span class="topbar-brand" id="topbar-brand-text">Sari Express</span>
       <span class="topbar-sep">|</span>
-      <span class="topbar-page">Paquetería</span>
+      <span style="font-size:14px;color:var(--text2)">Paquetería</span>
     </div>
     <div class="topbar-right">
+      <span class="rol-badge" id="topbar-rol-badge"></span>
       <span class="user-badge" id="user-email-badge"></span>
       <button class="btn-sm" onclick="doLogout()">Salir</button>
     </div>
   </div>
-
   <div class="nav">
     <button class="nav-item active" onclick="showPanel('dashboard')">Inicio</button>
-    <button class="nav-item" onclick="showPanel('ingreso')">Ingresar paquetes</button>
+    <button class="nav-item" onclick="showPanel('ingreso')" id="nav-ingreso">Ingresar paquetes</button>
     <button class="nav-item" onclick="showPanel('historico')">Historial</button>
     <button class="nav-item" onclick="showPanel('incidencias')">Incidencias</button>
+    <button class="nav-item" onclick="showPanel('logs')" id="nav-logs">Logs</button>
   </div>
-
   <div class="main">
 
     <!-- DASHBOARD -->
     <div class="panel active" id="panel-dashboard">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Hoy</div>
-          <div class="stat-value" id="stat-today">0</div>
-          <div class="stat-sub">paquetes ingresados</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Esta semana</div>
-          <div class="stat-value" id="stat-week">0</div>
-          <div id="stat-week-delta" class="stat-sub">vs semana anterior</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Este mes</div>
-          <div class="stat-value" id="stat-month">0</div>
-          <div class="stat-sub">paquetes</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total histórico</div>
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-sub">en el sistema</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Hoy</div><div class="stat-value" id="stat-today">0</div><div class="stat-sub">paquetes ingresados</div></div>
+        <div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-value" id="stat-week">0</div><div id="stat-week-delta" class="stat-sub">vs semana anterior</div></div>
+        <div class="stat-card"><div class="stat-label">Este mes</div><div class="stat-value" id="stat-month">0</div><div class="stat-sub">paquetes</div></div>
+        <div class="stat-card"><div class="stat-label">Total histórico</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub">en el sistema</div></div>
       </div>
-
       <div class="dash-row">
-        <div class="card" style="margin-bottom:0;">
-          <div class="card-title">Top carriers este mes</div>
-          <div id="carriers-top-wrap"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
-        </div>
-        <div class="card" style="margin-bottom:0;">
-          <div class="card-title">Últimos ingresos</div>
-          <div id="recent-table-wrap"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
-        </div>
+        <div class="card" style="margin-bottom:0;"><div class="card-title">Top carriers este mes</div><div id="carriers-top-wrap"><div class="loading"><div class="spinner"></div> Cargando...</div></div></div>
+        <div class="card" style="margin-bottom:0;"><div class="card-title">Últimos ingresos</div><div id="recent-table-wrap"><div class="loading"><div class="spinner"></div> Cargando...</div></div></div>
       </div>
     </div>
 
@@ -273,47 +238,28 @@
       <div class="card">
         <div class="card-title">Ingreso individual</div>
         <div class="grid-3">
-          <div class="form-group">
-            <label>Tracking number</label>
-            <input type="text" id="single-tracking" placeholder="ej. TBA123456789000">
-          </div>
+          <div class="form-group"><label>Tracking number</label><input type="text" id="single-tracking" placeholder="ej. TBA123456789000"></div>
           <div class="form-group">
             <label>Carrier</label>
             <select id="single-carrier" onchange="toggleCustomCarrier('single')">
               <option value="">Seleccionar...</option>
-              <option value="Amazon">Amazon</option>
-              <option value="Shein">Shein</option>
-              <option value="eBay">eBay</option>
-              <option value="Temu">Temu</option>
-              <option value="AliExpress">AliExpress</option>
-              <option value="USPS">USPS</option>
-              <option value="__otro__">Otro (especificar)</option>
+              <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
+              <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="__otro__">Otro (especificar)</option>
             </select>
-            <div class="carrier-custom-wrap" id="single-carrier-custom-wrap">
-              <input type="text" id="single-carrier-custom" placeholder="Nombre del carrier">
-            </div>
+            <div class="carrier-custom-wrap" id="single-carrier-custom-wrap"><input type="text" id="single-carrier-custom" placeholder="Nombre del carrier"></div>
           </div>
-          <div class="form-group">
-            <label>Fila / Ubicación</label>
-            <input type="text" id="single-fila" placeholder="ej. A1, B3">
-          </div>
+          <div class="form-group"><label>Fila / Ubicación</label><input type="text" id="single-fila" placeholder="ej. A1, B3"></div>
         </div>
         <div class="grid-2">
-          <div class="form-group">
-            <label>Fecha de ingreso</label>
-            <input type="date" id="single-fecha">
-          </div>
-          <div class="form-group">
-            <label>Observación (opcional)</label>
-            <input type="text" id="single-obs" placeholder="Notas adicionales">
-          </div>
+          <div class="form-group"><label>Fecha de ingreso</label><input type="date" id="single-fecha"></div>
+          <div class="form-group"><label>Observación (opcional)</label><input type="text" id="single-obs" placeholder="Notas adicionales"></div>
         </div>
         <div class="btn-group">
           <button class="btn-submit" onclick="submitSingle()">Guardar paquete</button>
           <button class="btn-clear" onclick="clearSingle()">Limpiar</button>
         </div>
       </div>
-
       <div class="card">
         <div class="card-title">Ingreso por lote</div>
         <div class="form-group">
@@ -326,26 +272,14 @@
             <label>Carrier</label>
             <select id="batch-carrier" onchange="toggleCustomCarrier('batch')">
               <option value="">Seleccionar...</option>
-              <option value="Amazon">Amazon</option>
-              <option value="Shein">Shein</option>
-              <option value="eBay">eBay</option>
-              <option value="Temu">Temu</option>
-              <option value="AliExpress">AliExpress</option>
-              <option value="USPS">USPS</option>
-              <option value="__otro__">Otro (especificar)</option>
+              <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
+              <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="__otro__">Otro (especificar)</option>
             </select>
-            <div class="carrier-custom-wrap" id="batch-carrier-custom-wrap">
-              <input type="text" id="batch-carrier-custom" placeholder="Nombre del carrier">
-            </div>
+            <div class="carrier-custom-wrap" id="batch-carrier-custom-wrap"><input type="text" id="batch-carrier-custom" placeholder="Nombre del carrier"></div>
           </div>
-          <div class="form-group">
-            <label>Fila / Ubicación</label>
-            <input type="text" id="batch-fila" placeholder="ej. A1">
-          </div>
-          <div class="form-group">
-            <label>Fecha de ingreso</label>
-            <input type="date" id="batch-fecha">
-          </div>
+          <div class="form-group"><label>Fila / Ubicación</label><input type="text" id="batch-fila" placeholder="ej. A1"></div>
+          <div class="form-group"><label>Fecha de ingreso</label><input type="date" id="batch-fecha"></div>
         </div>
         <div class="btn-group">
           <button class="btn-submit" onclick="submitBatch()">Guardar lote</button>
@@ -357,10 +291,7 @@
     <!-- HISTORICO -->
     <div class="panel" id="panel-historico">
       <div class="section-header">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="section-title">Historial de paquetes</span>
-          <span class="count-badge" id="hist-count">0</span>
-        </div>
+        <div style="display:flex;align-items:center;gap:10px;"><span class="section-title">Historial de paquetes</span><span class="count-badge" id="hist-count">0</span></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-sm btn-accent" onclick="exportExcel()">Exportar Excel</button>
           <button class="btn-sm" style="background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bg);" onclick="exportPDF()">Exportar PDF</button>
@@ -370,25 +301,25 @@
         <input type="text" id="filter-search" placeholder="Buscar tracking o carrier..." oninput="filterTable()">
         <select id="filter-carrier" onchange="filterTable()">
           <option value="">Todos los carriers</option>
-          <option value="Amazon">Amazon</option>
-          <option value="Shein">Shein</option>
-          <option value="eBay">eBay</option>
-          <option value="Temu">Temu</option>
-          <option value="AliExpress">AliExpress</option>
-          <option value="USPS">USPS</option>
+          <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
+          <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
+          <option value="FedEx">FedEx</option><option value="DHL">DHL</option>
         </select>
         <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
         <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
+        <select id="filter-orden" onchange="filterTable()">
+          <option value="fecha_desc">Más recientes primero</option>
+          <option value="fecha_asc">Más antiguos primero</option>
+          <option value="carrier_asc">Carrier A-Z</option>
+          <option value="tracking_asc">Tracking A-Z</option>
+          <option value="fila_asc">Fila A-Z</option>
+        </select>
         <button class="btn-sm" onclick="clearFilters()">Limpiar filtros</button>
       </div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha / Hora</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th><th>Acciones</th></tr>
-          </thead>
-          <tbody id="hist-tbody">
-            <tr><td colspan="9"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
-          </tbody>
+          <thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha / Hora</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th><th id="th-acciones">Acciones</th></tr></thead>
+          <tbody id="hist-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr></tbody>
         </table>
       </div>
       <div class="pagination" id="pagination"></div>
@@ -397,10 +328,7 @@
     <!-- INCIDENCIAS -->
     <div class="panel" id="panel-incidencias">
       <div class="section-header">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="section-title">Incidencias</span>
-          <span class="count-badge" id="inc-count">0</span>
-        </div>
+        <div style="display:flex;align-items:center;gap:10px;"><span class="section-title">Incidencias</span><span class="count-badge" id="inc-count">0</span></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-sm btn-accent" onclick="exportIncidenciasExcel()">Exportar Excel</button>
           <button class="btn-sm" style="background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bg);" onclick="exportIncidenciasPDF()">Exportar PDF</button>
@@ -409,23 +337,14 @@
       <div class="card">
         <div class="card-title">Registrar nueva incidencia</div>
         <div class="grid-3">
-          <div class="form-group">
-            <label>Tracking number (opcional)</label>
-            <input type="text" id="inc-tracking" placeholder="Dejar vacío si es general">
-          </div>
+          <div class="form-group"><label>Tracking number (opcional)</label><input type="text" id="inc-tracking" placeholder="Dejar vacío si es general"></div>
           <div class="form-group">
             <label>Carrier</label>
             <select id="inc-carrier">
               <option value="">Seleccionar...</option>
-              <option value="Amazon">Amazon</option>
-              <option value="Shein">Shein</option>
-              <option value="eBay">eBay</option>
-              <option value="Temu">Temu</option>
-              <option value="AliExpress">AliExpress</option>
-              <option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option>
-              <option value="DHL">DHL</option>
-              <option value="Otro">Otro</option>
+              <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
+              <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="Otro">Otro</option>
             </select>
           </div>
           <div class="form-group">
@@ -441,10 +360,7 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label>Descripción / comentario</label>
-          <textarea class="batch-area" id="inc-descripcion" rows="2" placeholder="Describe la incidencia con detalle..."></textarea>
-        </div>
+        <div class="form-group"><label>Descripción / comentario</label><textarea class="batch-area" id="inc-descripcion" rows="2" placeholder="Describe la incidencia con detalle..."></textarea></div>
         <div class="btn-group">
           <button class="btn-submit" onclick="submitIncidencia()">Registrar incidencia</button>
           <button class="btn-clear" onclick="clearIncidencia()">Limpiar</button>
@@ -454,9 +370,7 @@
         <input type="text" id="inc-filter-search" placeholder="Buscar tracking, carrier o tipo..." oninput="filterIncidencias()">
         <select id="inc-filter-estado" onchange="filterIncidencias()">
           <option value="">Todos los estados</option>
-          <option value="Pendiente">Pendiente</option>
-          <option value="En proceso">En proceso</option>
-          <option value="Resuelta">Resuelta</option>
+          <option value="Pendiente">Pendiente</option><option value="En proceso">En proceso</option><option value="Resuelta">Resuelta</option>
         </select>
         <input type="date" id="inc-filter-desde" onchange="filterIncidencias()" title="Desde">
         <input type="date" id="inc-filter-hasta" onchange="filterIncidencias()" title="Hasta">
@@ -464,15 +378,36 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr><th>Fecha / Hora</th><th>Tracking</th><th>Carrier</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Reportado por</th><th>Acciones</th></tr>
-          </thead>
-          <tbody id="inc-tbody">
-            <tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
-          </tbody>
+          <thead><tr><th>Fecha / Hora</th><th>Tracking</th><th>Carrier</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Reportado por</th><th>Acciones</th></tr></thead>
+          <tbody id="inc-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr></tbody>
         </table>
       </div>
       <div class="pagination" id="inc-pagination"></div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="panel" id="panel-logs">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:10px;"><span class="section-title">Logs de actividad</span><span class="count-badge" id="logs-count">0</span></div>
+        <div style="font-size:12px;color:var(--text3);">Solo lectura. Los logs no se pueden modificar ni eliminar.</div>
+      </div>
+      <div class="table-toolbar">
+        <input type="text" id="logs-filter-search" placeholder="Buscar usuario, tracking o acción..." oninput="filterLogs()">
+        <select id="logs-filter-accion" onchange="filterLogs()">
+          <option value="">Todas las acciones</option>
+          <option value="Ingreso">Ingreso</option><option value="Edición">Edición</option><option value="Eliminación">Eliminación</option>
+        </select>
+        <input type="date" id="logs-filter-desde" onchange="filterLogs()" title="Desde">
+        <input type="date" id="logs-filter-hasta" onchange="filterLogs()" title="Hasta">
+        <button class="btn-sm" onclick="clearLogsFiltros()">Limpiar filtros</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha / Hora</th><th>Acción</th><th>Usuario</th><th>Detalle</th><th>Trackings</th></tr></thead>
+          <tbody id="logs-tbody"><tr><td colspan="5"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="logs-pagination"></div>
     </div>
 
   </div>
@@ -485,14 +420,8 @@
   <div class="modal-box">
     <div class="modal-title">Editar paquete</div>
     <div class="modal-subtitle" id="modal-tracking-label"></div>
-    <div class="form-group">
-      <label>Fila / Ubicación</label>
-      <input type="text" id="modal-fila" placeholder="ej. A1, B3">
-    </div>
-    <div class="form-group">
-      <label>Observación</label>
-      <textarea class="batch-area" id="modal-obs" rows="3" placeholder="Daños, novedades, comentarios..."></textarea>
-    </div>
+    <div class="form-group"><label>Fila / Ubicación</label><input type="text" id="modal-fila" placeholder="ej. A1, B3"></div>
+    <div class="form-group"><label>Observación</label><textarea class="batch-area" id="modal-obs" rows="3" placeholder="Daños, novedades, comentarios..."></textarea></div>
     <div class="modal-actions">
       <button class="btn-clear" onclick="cerrarModal()">Cancelar</button>
       <button class="btn-submit" onclick="guardarEdicion()">Guardar cambios</button>
@@ -503,33 +432,45 @@
 <script>
 const SUPABASE_URL = 'https://yvqfwwdamjzhwyqcrhlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2cWZ3d2RhbWp6aHd5cWNyaGx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NzU0MzIsImV4cCI6MjA5MjU1MTQzMn0.bCDrGVcgjnUTHx2epUd5AvBvywcCS-t4ydI09KRriu0';
-
-// =====================================================
-// LOGO: Pega aquí la URL de tu logo para activarlo.
-// Ejemplo: const LOGO_URL = 'https://i.imgur.com/abc123.png';
-// Déjalo vacío ('') para mostrar solo el texto.
 const LOGO_URL = 'logo_sari.png';
-// =====================================================
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
-let allPaquetes = [];
-let filteredPaquetes = [];
-let currentPage = 1;
+let currentRol = 'agente';
+let allPaquetes = [], filteredPaquetes = [], currentPage = 1;
+let allIncidencias = [], filteredIncidencias = [], incPage = 1;
+let allLogs = [], filteredLogs = [], logsPage = 1;
 const PAGE_SIZE = 25;
 
+// ---- PERMISOS ----
+const PERMISOS = {
+  admin:      { ingresar: true,  editar: true,  eliminar: true,  verLogs: true  },
+  supervisor: { ingresar: true,  editar: true,  eliminar: false, verLogs: true  },
+  agente:     { ingresar: true,  editar: false, eliminar: false, verLogs: false }
+};
+
+function puedo(accion) { return PERMISOS[currentRol]?.[accion] || false; }
+
+function aplicarPermisos() {
+  if (!puedo('verLogs')) document.getElementById('nav-logs').classList.add('hidden');
+  if (!puedo('ingresar')) document.getElementById('nav-ingreso').classList.add('hidden');
+  const badge = document.getElementById('topbar-rol-badge');
+  badge.textContent = currentRol.charAt(0).toUpperCase() + currentRol.slice(1);
+  badge.className = `rol-badge rol-${currentRol}`;
+}
+
+// ---- LOGO ----
 function applyLogo() {
   if (!LOGO_URL) return;
   const authImg = document.getElementById('auth-logo-img');
   const topImg = document.getElementById('topbar-logo-img');
-  const topText = document.getElementById('topbar-brand-text');
-  const authText = document.getElementById('auth-brand-text');
-  authImg.src = LOGO_URL; authImg.style.display = 'block'; authText.style.display = 'none';
-  topImg.src = LOGO_URL; topImg.style.display = 'block'; topText.style.display = 'none';
+  authImg.src = LOGO_URL; authImg.style.display = 'block'; document.getElementById('auth-brand-text').style.display = 'none';
+  topImg.src = LOGO_URL; topImg.style.display = 'block'; document.getElementById('topbar-brand-text').style.display = 'none';
 }
 
+// ---- AUTH ----
 function switchTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
   document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
@@ -545,22 +486,7 @@ function mostrarOlvidePass() {
   document.getElementById('auth-msg').innerHTML = '';
 }
 
-async function doForgotPass() {
-  const email = document.getElementById('forgot-email').value.trim();
-  if (!email) { showAuthMsg('Ingresa tu correo.', 'error'); return; }
-  const btn = document.getElementById('btn-forgot');
-  btn.disabled = true; btn.textContent = 'Enviando...';
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://sari-paqueteria.vercel.app'
-  });
-  btn.disabled = false; btn.textContent = 'Enviar enlace de recuperación';
-  if (error) { showAuthMsg(error.message, 'error'); return; }
-  showAuthMsg('Correo enviado. Revisa tu bandeja de entrada.', 'success');
-}
-
-function showAuthMsg(msg, type) {
-  document.getElementById('auth-msg').innerHTML = `<div class="msg ${type}">${msg}</div>`;
-}
+function showAuthMsg(msg, type) { document.getElementById('auth-msg').innerHTML = `<div class="msg ${type}">${msg}</div>`; }
 
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -571,7 +497,7 @@ async function doLogin() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   btn.disabled = false; btn.textContent = 'Entrar';
   if (error) { showAuthMsg(error.message, 'error'); return; }
-  initApp(data.user);
+  await initApp(data.user);
 }
 
 async function doRegister() {
@@ -580,70 +506,65 @@ async function doRegister() {
   const nombre = document.getElementById('reg-nombre').value.trim();
   const apellido = document.getElementById('reg-apellido').value.trim();
   const fullName = [nombre, apellido].filter(Boolean).join(' ');
-  if (!email || !pass) { showAuthMsg('Ingresa correo y contraseña.', 'error'); return; }
-  if (!fullName) { showAuthMsg('Ingresa tu nombre y apellido.', 'error'); return; }
+  if (!email || !pass || !fullName) { showAuthMsg('Completa todos los campos.', 'error'); return; }
   const btn = document.getElementById('btn-register');
   btn.disabled = true; btn.textContent = 'Creando cuenta...';
-  const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: fullName } } });
+  const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: fullName } } });
   btn.disabled = false; btn.textContent = 'Crear cuenta';
   if (error) { showAuthMsg(error.message, 'error'); return; }
   showAuthMsg('Cuenta creada. Revisa tu correo para confirmar.', 'success');
 }
 
+async function doForgotPass() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showAuthMsg('Ingresa tu correo.', 'error'); return; }
+  const btn = document.getElementById('btn-forgot');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://sari-paqueteria.vercel.app' });
+  btn.disabled = false; btn.textContent = 'Enviar enlace de recuperación';
+  if (error) { showAuthMsg(error.message, 'error'); return; }
+  showAuthMsg('Correo enviado. Revisa tu bandeja de entrada.', 'success');
+}
+
 async function doLogout() {
   await sb.auth.signOut();
-  currentUser = null;
+  currentUser = null; currentRol = 'agente';
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
 }
 
-function initApp(user) {
+async function initApp(user) {
   currentUser = user;
   currentUser._nombre = user.user_metadata?.full_name || user.email;
+  const { data: rolData } = await sb.from('user_roles').select('rol').eq('email', user.email).single();
+  currentRol = rolData?.rol || 'agente';
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   document.getElementById('user-email-badge').textContent = currentUser._nombre;
   applyLogo();
+  aplicarPermisos();
   setTodayDates();
   loadDashboard();
   loadHistorico();
 }
 
-function toggleCustomCarrier(prefix) {
-  const val = document.getElementById(prefix + '-carrier').value;
-  const wrap = document.getElementById(prefix + '-carrier-custom-wrap');
-  wrap.style.display = val === '__otro__' ? 'block' : 'none';
-  if (val !== '__otro__') document.getElementById(prefix + '-carrier-custom').value = '';
-}
-
-function getCarrierValue(prefix) {
-  const sel = document.getElementById(prefix + '-carrier').value;
-  if (sel === '__otro__') {
-    const custom = document.getElementById(prefix + '-carrier-custom').value.trim();
-    return custom || null;
-  }
-  return sel || null;
-}
-
+// ---- UTILS ----
 function setTodayDates() {
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('single-fecha').value = today;
-  document.getElementById('single-fecha').max = today;
-  document.getElementById('single-fecha').min = today;
-  document.getElementById('batch-fecha').value = today;
-  document.getElementById('batch-fecha').max = today;
-  document.getElementById('batch-fecha').min = today;
+  ['single-fecha','batch-fecha'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = today; el.min = today; el.max = today;
+  });
 }
 
 function toast(msg, type='success') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
+  t.textContent = msg; t.className = `toast ${type} show`;
   setTimeout(() => t.className = 'toast', 3000);
 }
 
 function carrierClass(carrier) {
-  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps' };
+  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps', FedEx:'fedex', DHL:'dhl' };
   return 'carrier-' + (map[carrier] || 'other');
 }
 
@@ -653,25 +574,44 @@ function formatDate(d) {
   return `${dd}/${m}/${y}`;
 }
 
+function getNow() {
+  return { fecha: new Date().toISOString().split('T')[0], hora: new Date().toTimeString().split(' ')[0] };
+}
+
+// ---- LOGS ----
+async function registrarLog(accion, trackings, esLote, datosAnteriores, datosNuevos) {
+  const { fecha, hora } = getNow();
+  await sb.from('logs').insert({
+    accion, tracking_numbers: trackings, es_lote: esLote,
+    cantidad_lote: esLote ? trackings.length : null,
+    datos_anteriores: datosAnteriores || null,
+    datos_nuevos: datosNuevos || null,
+    usuario_nombre: currentUser._nombre,
+    usuario_email: currentUser.email,
+    fecha, hora
+  });
+}
+
+// ---- PANELS ----
 function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  const idx = {dashboard:0, ingreso:1, historico:2, incidencias:3}[name];
-  document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  const idx = {dashboard:0, ingreso:1, historico:2, incidencias:3, logs:4}[name];
+  document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
   if (name === 'historico') loadHistorico();
   if (name === 'dashboard') loadDashboard();
   if (name === 'incidencias') loadIncidencias();
+  if (name === 'logs') loadLogs();
 }
 
+// ---- DASHBOARD ----
 async function loadDashboard() {
-  const { data } = await sb.from('paquetes').select('*').order('created_at', { ascending: false });
+  const { data } = await sb.from('paquetes').select('*').eq('eliminado', false).order('created_at', { ascending: false });
   if (!data) return;
-
   const now = new Date();
   const today = now.toISOString().split('T')[0];
   const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-
   const dow = now.getDay();
   const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - dow);
   const weekStart = startOfWeek.toISOString().split('T')[0];
@@ -679,67 +619,66 @@ async function loadDashboard() {
   const prevWeekStart = startOfPrevWeek.toISOString().split('T')[0];
   const prevWeekEnd = new Date(startOfWeek); prevWeekEnd.setDate(prevWeekEnd.getDate() - 1);
   const prevWeekEndStr = prevWeekEnd.toISOString().split('T')[0];
-
   const thisWeekCount = data.filter(p => p.fecha_ingreso >= weekStart).length;
   const prevWeekCount = data.filter(p => p.fecha_ingreso >= prevWeekStart && p.fecha_ingreso <= prevWeekEndStr).length;
-
   document.getElementById('stat-today').textContent = data.filter(p => p.fecha_ingreso === today).length;
   document.getElementById('stat-week').textContent = thisWeekCount;
   document.getElementById('stat-month').textContent = data.filter(p => p.fecha_ingreso >= monthStart).length;
   document.getElementById('stat-total').textContent = data.length;
-
   const deltaEl = document.getElementById('stat-week-delta');
-  if (prevWeekCount === 0) {
-    deltaEl.textContent = 'vs semana anterior';
-    deltaEl.className = 'stat-sub';
-  } else {
+  if (prevWeekCount === 0) { deltaEl.textContent = 'vs semana anterior'; deltaEl.className = 'stat-sub'; }
+  else {
     const diff = thisWeekCount - prevWeekCount;
     const pct = Math.round((Math.abs(diff) / prevWeekCount) * 100);
     if (diff > 0) { deltaEl.textContent = `+${pct}% vs sem. anterior`; deltaEl.className = 'stat-delta-up'; }
     else if (diff < 0) { deltaEl.textContent = `-${pct}% vs sem. anterior`; deltaEl.className = 'stat-delta-down'; }
     else { deltaEl.textContent = 'igual que sem. anterior'; deltaEl.className = 'stat-sub'; }
   }
-
   const thisMonthData = data.filter(p => p.fecha_ingreso >= monthStart);
   const carrierCounts = {};
   thisMonthData.forEach(p => { carrierCounts[p.carrier] = (carrierCounts[p.carrier] || 0) + 1; });
   const sorted = Object.entries(carrierCounts).sort((a,b) => b[1]-a[1]).slice(0,5);
   const maxVal = sorted.length > 0 ? sorted[0][1] : 1;
   const carrierWrap = document.getElementById('carriers-top-wrap');
-  if (sorted.length === 0) {
-    carrierWrap.innerHTML = '<div class="empty-state" style="padding:1rem 0;"><p>Sin datos este mes.</p></div>';
-  } else {
-    carrierWrap.innerHTML = sorted.map(([name, count]) => `
-      <div style="margin-bottom:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span class="carrier-badge ${carrierClass(name)}">${name}</span>
-          <span style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text2);">${count}</span>
-        </div>
-        <div class="carrier-bar-wrap"><div class="carrier-bar" style="width:${Math.round((count/maxVal)*100)}%"></div></div>
+  carrierWrap.innerHTML = sorted.length === 0 ? '<div class="empty-state" style="padding:1rem 0;"><p>Sin datos este mes.</p></div>' :
+    sorted.map(([name, count]) => `<div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span class="carrier-badge ${carrierClass(name)}">${name}</span>
+        <span style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text2);">${count}</span>
       </div>
-    `).join('');
-  }
-
+      <div class="carrier-bar-wrap"><div class="carrier-bar" style="width:${Math.round((count/maxVal)*100)}%"></div></div>
+    </div>`).join('');
   const recent = data.slice(0, 8);
   const wrap = document.getElementById('recent-table-wrap');
-  if (recent.length === 0) {
-    wrap.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No hay paquetes aún.</p></div>';
-    return;
-  }
-  wrap.innerHTML = `<div style="overflow-x:auto;">
-    <table>
-      <thead><tr><th>Tracking</th><th>Carrier</th><th>Fila</th><th>Fecha</th></tr></thead>
-      <tbody>${recent.map(p => `<tr>
-        <td><span class="tracking-code">${p.tracking_number}</span></td>
-        <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
-        <td>${p.fila || '—'}</td>
-        <td>${formatDate(p.fecha_ingreso)}</td>
-      </tr>`).join('')}</tbody>
-    </table>
-  </div>`;
+  if (recent.length === 0) { wrap.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No hay paquetes aún.</p></div>'; return; }
+  wrap.innerHTML = `<div style="overflow-x:auto;"><table>
+    <thead><tr><th>Tracking</th><th>Carrier</th><th>Fila</th><th>Fecha</th></tr></thead>
+    <tbody>${recent.map(p => `<tr>
+      <td><span class="tracking-code">${p.tracking_number}</span></td>
+      <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
+      <td>${p.fila || '—'}</td>
+      <td>${formatDate(p.fecha_ingreso)}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
 }
 
+// ---- CARRIER HELPERS ----
+function toggleCustomCarrier(prefix) {
+  const val = document.getElementById(prefix + '-carrier').value;
+  const wrap = document.getElementById(prefix + '-carrier-custom-wrap');
+  wrap.style.display = val === '__otro__' ? 'block' : 'none';
+  if (val !== '__otro__') document.getElementById(prefix + '-carrier-custom').value = '';
+}
+
+function getCarrierValue(prefix) {
+  const sel = document.getElementById(prefix + '-carrier').value;
+  if (sel === '__otro__') { const c = document.getElementById(prefix + '-carrier-custom').value.trim(); return c || null; }
+  return sel || null;
+}
+
+// ---- INGRESO INDIVIDUAL ----
 async function submitSingle() {
+  if (!puedo('ingresar')) { toast('Sin permiso para ingresar paquetes.', 'error'); return; }
   const tracking = document.getElementById('single-tracking').value.trim();
   const carrier = getCarrierValue('single');
   const fila = document.getElementById('single-fila').value.trim();
@@ -748,15 +687,17 @@ async function submitSingle() {
   if (!tracking) { toast('Ingresa el tracking number.', 'error'); return; }
   if (!carrier) { toast('Selecciona o escribe el carrier.', 'error'); return; }
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
-  const { data: existing } = await sb.from('paquetes').select('fecha_ingreso, hora_ingreso').eq('tracking_number', tracking);
+  const { data: existing } = await sb.from('paquetes').select('fecha_ingreso, hora_ingreso').eq('tracking_number', tracking).eq('eliminado', false);
   if (existing && existing.length > 0) {
     const prev = existing[0];
     const msg = `El tracking ${tracking} ya fue ingresado el ${formatDate(prev.fecha_ingreso)}${prev.hora_ingreso ? ' a las ' + prev.hora_ingreso.substring(0,5) : ''}. ¿Deseas guardarlo de todas formas?`;
     if (!confirm(msg)) return;
   }
-  const horaActual = new Date().toTimeString().split(' ')[0];
-  const { error } = await sb.from('paquetes').insert({ tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, hora_ingreso: horaActual, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre });
+  const { hora } = getNow();
+  const datos = { tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, hora_ingreso: hora, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre };
+  const { error } = await sb.from('paquetes').insert(datos);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await registrarLog('Ingreso', [tracking], false, null, { carrier, fila, fecha_ingreso: fecha });
   toast('Paquete guardado correctamente.');
   clearSingle();
   loadDashboard();
@@ -772,7 +713,9 @@ function clearSingle() {
   setTodayDates();
 }
 
+// ---- INGRESO LOTE ----
 async function submitBatch() {
+  if (!puedo('ingresar')) { toast('Sin permiso para ingresar paquetes.', 'error'); return; }
   const raw = document.getElementById('batch-trackings').value.trim();
   const carrier = getCarrierValue('batch');
   const fila = document.getElementById('batch-fila').value.trim();
@@ -782,19 +725,19 @@ async function submitBatch() {
   if (!fecha) { toast('Selecciona la fecha.', 'error'); return; }
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   if (lines.length === 0) { toast('No se encontraron trackings válidos.', 'error'); return; }
-  const { data: existing } = await sb.from('paquetes').select('tracking_number, fecha_ingreso, hora_ingreso').in('tracking_number', lines);
+  const { data: existing } = await sb.from('paquetes').select('tracking_number, fecha_ingreso, hora_ingreso').in('tracking_number', lines).eq('eliminado', false);
   const dupMap = {};
   if (existing) existing.forEach(p => { dupMap[p.tracking_number] = p; });
   const duplicados = lines.filter(t => dupMap[t]);
   if (duplicados.length > 0) {
     const lista = duplicados.map(t => `• ${t} (ingresado el ${formatDate(dupMap[t].fecha_ingreso)}${dupMap[t].hora_ingreso ? ' a las ' + dupMap[t].hora_ingreso.substring(0,5) : ''})`).join('\n');
-    const msg = `${duplicados.length} tracking(s) ya existen en el sistema:\n\n${lista}\n\n¿Deseas guardar el lote completo de todas formas?`;
-    if (!confirm(msg)) return;
+    if (!confirm(`${duplicados.length} tracking(s) ya existen:\n\n${lista}\n\n¿Deseas guardar el lote completo de todas formas?`)) return;
   }
-  const horaActual = new Date().toTimeString().split(' ')[0];
-  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, hora_ingreso: horaActual, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre }));
+  const { hora } = getNow();
+  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, hora_ingreso: hora, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre }));
   const { error } = await sb.from('paquetes').insert(rows);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await registrarLog('Ingreso', lines, true, null, { carrier, fila, fecha_ingreso: fecha });
   toast(`${lines.length} paquete(s) guardados correctamente.`);
   clearBatch();
   loadDashboard();
@@ -809,9 +752,10 @@ function clearBatch() {
   setTodayDates();
 }
 
+// ---- HISTORICO ----
 async function loadHistorico() {
   document.getElementById('hist-tbody').innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
-  const { data, error } = await sb.from('paquetes').select('*').order('fecha_ingreso', { ascending: false }).order('created_at', { ascending: false });
+  const { data, error } = await sb.from('paquetes').select('*').eq('eliminado', false).order('fecha_ingreso', { ascending: false }).order('created_at', { ascending: false });
   if (error) { toast('Error al cargar historial.', 'error'); return; }
   allPaquetes = data || [];
   filteredPaquetes = [...allPaquetes];
@@ -824,12 +768,21 @@ function filterTable() {
   const carrier = document.getElementById('filter-carrier').value;
   const desde = document.getElementById('filter-desde').value;
   const hasta = document.getElementById('filter-hasta').value;
+  const orden = document.getElementById('filter-orden').value;
   filteredPaquetes = allPaquetes.filter(p => {
     if (search && !p.tracking_number.toLowerCase().includes(search) && !p.carrier.toLowerCase().includes(search)) return false;
     if (carrier && p.carrier !== carrier) return false;
     if (desde && p.fecha_ingreso < desde) return false;
     if (hasta && p.fecha_ingreso > hasta) return false;
     return true;
+  });
+  filteredPaquetes.sort((a, b) => {
+    if (orden === 'fecha_desc') return (b.fecha_ingreso+b.hora_ingreso||'').localeCompare(a.fecha_ingreso+a.hora_ingreso||'');
+    if (orden === 'fecha_asc')  return (a.fecha_ingreso+a.hora_ingreso||'').localeCompare(b.fecha_ingreso+b.hora_ingreso||'');
+    if (orden === 'carrier_asc') return a.carrier.localeCompare(b.carrier);
+    if (orden === 'tracking_asc') return a.tracking_number.localeCompare(b.tracking_number);
+    if (orden === 'fila_asc') return (a.fila||'').localeCompare(b.fila||'');
+    return 0;
   });
   currentPage = 1;
   renderTable();
@@ -840,6 +793,7 @@ function clearFilters() {
   document.getElementById('filter-carrier').value = '';
   document.getElementById('filter-desde').value = '';
   document.getElementById('filter-hasta').value = '';
+  document.getElementById('filter-orden').value = 'fecha_desc';
   filteredPaquetes = [...allPaquetes];
   currentPage = 1;
   renderTable();
@@ -850,8 +804,10 @@ function renderTable() {
   const start = (currentPage - 1) * PAGE_SIZE;
   const page = filteredPaquetes.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('hist-tbody');
+  const canEdit = puedo('editar');
+  const canDelete = puedo('eliminar');
   if (page.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
   } else {
     tbody.innerHTML = page.map(p => `<tr>
       <td><span class="tracking-code">${p.tracking_number}</span></td>
@@ -863,8 +819,8 @@ function renderTable() {
       <td style="color:var(--text3);font-size:12px;">${p.modificado_por_nombre || '—'}</td>
       <td class="actions-cell">
         <div style="display:flex;gap:6px;align-items:center;">
-          <button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>
-          <button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>
+          ${canEdit ? `<button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>` : '<span class="btn-disabled">Editar</span>'}
+          ${canDelete ? `<button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>` : ''}
         </div>
       </td>
     </tr>`).join('');
@@ -878,58 +834,20 @@ function renderPagination() {
   if (total <= 1) { pg.innerHTML = ''; return; }
   let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Ant</button>`;
   for (let i = 1; i <= total; i++) {
-    if (i === 1 || i === total || Math.abs(i - currentPage) <= 1) {
-      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-    } else if (Math.abs(i - currentPage) === 2) {
-      html += `<span style="color:var(--text3)">...</span>`;
-    }
+    if (i===1||i===total||Math.abs(i-currentPage)<=1) html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    else if (Math.abs(i-currentPage)===2) html += `<span style="color:var(--text3)">...</span>`;
   }
   html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>Sig →</button>`;
   pg.innerHTML = html;
 }
 
-function goPage(n) {
-  currentPage = n;
-  renderTable();
-  document.querySelector('.table-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-async function deletePaquete(id) {
-  if (!confirm('¿Eliminar este paquete?')) return;
-  const { error } = await sb.from('paquetes').delete().eq('id', id);
-  if (error) { toast('Error al eliminar.', 'error'); return; }
-  toast('Paquete eliminado.');
-  allPaquetes = allPaquetes.filter(p => p.id !== id);
-  filteredPaquetes = filteredPaquetes.filter(p => p.id !== id);
-  renderTable();
-  loadDashboard();
-}
-
-function exportExcel() {
-  if (filteredPaquetes.length === 0) { toast('No hay datos para exportar.', 'error'); return; }
-  const rows = filteredPaquetes.map(p => ({
-    'Tracking Number': p.tracking_number,
-    'Carrier': p.carrier,
-    'Fila': p.fila || '',
-    'Fecha Ingreso': formatDate(p.fecha_ingreso),
-    'Hora Ingreso': p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '',
-    'Observación': p.observacion || '',
-    'Registrado por': p.registrado_por_nombre || '',
-    'Modificado por': p.modificado_por_nombre || ''
-  }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{ wch: 30 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 10 }, { wch: 25 }, { wch: 20 }, { wch: 20 }];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Paquetes');
-  const fecha = new Date().toISOString().split('T')[0];
-  XLSX.writeFile(wb, `sari_paqueteria_${fecha}.xlsx`);
-  toast('Excel exportado.');
-}
+function goPage(n) { currentPage = n; renderTable(); document.querySelector('.table-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' }); }
 
 // ---- MODAL EDITAR ----
 let modalPaqueteId = null;
 
 function abrirModal(id) {
+  if (!puedo('editar')) { toast('Sin permiso para editar.', 'error'); return; }
   const p = allPaquetes.find(x => x.id === id);
   if (!p) return;
   modalPaqueteId = id;
@@ -939,22 +857,20 @@ function abrirModal(id) {
   document.getElementById('modal-editar').classList.add('open');
 }
 
-function cerrarModal() {
-  document.getElementById('modal-editar').classList.remove('open');
-  modalPaqueteId = null;
-}
+function cerrarModal() { document.getElementById('modal-editar').classList.remove('open'); modalPaqueteId = null; }
 
 async function guardarEdicion() {
   if (!modalPaqueteId) return;
   const fila = document.getElementById('modal-fila').value.trim();
   const obs = document.getElementById('modal-obs').value.trim();
-  const nombre = currentUser._nombre || currentUser.email;
-  const { data, error } = await sb.from('paquetes')
-    .update({ fila: fila, observacion: obs, modificado_por_nombre: nombre })
-    .eq('id', modalPaqueteId)
-    .select();
-  if (error) { toast('Error: ' + error.message, 'error'); console.error(error); return; }
+  const nombre = currentUser._nombre;
+  const pAntes = allPaquetes.find(p => p.id === modalPaqueteId);
+  const { data, error } = await sb.from('paquetes').update({ fila, observacion: obs, modificado_por_nombre: nombre }).eq('id', modalPaqueteId).select();
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
   if (!data || data.length === 0) { toast('No se pudo actualizar. Verifica permisos.', 'error'); return; }
+  await registrarLog('Edición', [pAntes.tracking_number], false,
+    { fila: pAntes.fila, observacion: pAntes.observacion },
+    { fila, observacion: obs });
   const updated = data[0];
   const idx = allPaquetes.findIndex(p => p.id === modalPaqueteId);
   if (idx !== -1) allPaquetes[idx] = { ...allPaquetes[idx], ...updated };
@@ -965,58 +881,65 @@ async function guardarEdicion() {
   toast('Paquete actualizado correctamente.');
 }
 
+document.getElementById('modal-editar').addEventListener('click', function(e) { if (e.target === this) cerrarModal(); });
+
+// ---- ELIMINAR (lógico) ----
+async function deletePaquete(id) {
+  if (!puedo('eliminar')) { toast('Sin permiso para eliminar.', 'error'); return; }
+  if (!confirm('¿Eliminar este paquete? Quedará registrado en los logs.')) return;
+  const p = allPaquetes.find(x => x.id === id);
+  const { hora } = getNow();
+  const { error } = await sb.from('paquetes').update({ eliminado: true, eliminado_por_nombre: currentUser._nombre, eliminado_en: new Date().toISOString() }).eq('id', id);
+  if (error) { toast('Error al eliminar.', 'error'); return; }
+  await registrarLog('Eliminación', [p.tracking_number], false, { carrier: p.carrier, fila: p.fila, fecha_ingreso: p.fecha_ingreso }, null);
+  allPaquetes = allPaquetes.filter(x => x.id !== id);
+  filteredPaquetes = filteredPaquetes.filter(x => x.id !== id);
+  renderTable();
+  toast('Paquete eliminado.');
+}
+
+// ---- EXCEL / PDF HISTORICO ----
+function exportExcel() {
+  if (filteredPaquetes.length === 0) { toast('No hay datos para exportar.', 'error'); return; }
+  const rows = filteredPaquetes.map(p => ({
+    'Tracking Number': p.tracking_number, 'Carrier': p.carrier, 'Fila': p.fila || '',
+    'Fecha Ingreso': formatDate(p.fecha_ingreso), 'Hora Ingreso': p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '',
+    'Observación': p.observacion || '', 'Registrado por': p.registrado_por_nombre || '', 'Modificado por': p.modificado_por_nombre || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch:30 },{ wch:14 },{ wch:10 },{ wch:14 },{ wch:10 },{ wch:25 },{ wch:20 },{ wch:20 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Paquetes');
+  XLSX.writeFile(wb, `sari_paqueteria_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('Excel exportado.');
+}
+
 function exportPDF() {
   if (filteredPaquetes.length === 0) { toast('No hay datos para exportar.', 'error'); return; }
-  const fecha = new Date().toLocaleDateString('es-HN');
-  const rows = filteredPaquetes.map(p => `
-    <tr>
-      <td>${p.tracking_number}</td>
-      <td>${p.carrier}</td>
-      <td>${p.fila || '—'}</td>
-      <td>${formatDate(p.fecha_ingreso)}<br><span style="color:#9E9D98;font-size:10px;">${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</span></td>
-      <td>${p.observacion || '—'}</td>
-      <td>${p.registrado_por_nombre || '—'}</td>
-      <td>${p.modificado_por_nombre || '—'}</td>
-    </tr>`).join('');
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Sari Express - Paquetería</title>
-  <style>
-    body { font-family: Arial, sans-serif; font-size: 10px; color: #1A1A18; padding: 24px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #1A3A5C; }
-    .brand { font-size: 18px; font-weight: bold; color: #1A3A5C; }
-    .meta { font-size: 11px; color: #6B6A65; text-align: right; }
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #1A3A5C; color: white; padding: 6px 8px; text-align: left; font-size: 9px; text-transform: uppercase; }
-    td { padding: 6px 8px; border-bottom: 1px solid #E2E0D8; vertical-align: top; }
-    tr:nth-child(even) td { background: #F7F6F2; }
-    .footer { margin-top: 16px; font-size: 10px; color: #9E9D98; text-align: right; }
-  </style></head><body>
-  <div class="header">
-    <div class="brand">Sari Express — Control de Paquetería</div>
-    <div class="meta">Generado: ${fecha}<br>Total: ${filteredPaquetes.length} paquetes</div>
-  </div>
-  <table>
-    <thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha / Hora</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <div class="footer">Sari Express Forwarders</div>
+  const ahora = new Date();
+  const fechaExport = ahora.toLocaleDateString('es-HN');
+  const horaExport = ahora.toTimeString().substring(0,5);
+  const rows = filteredPaquetes.map(p => `<tr>
+    <td>${p.tracking_number}</td><td>${p.carrier}</td><td>${p.fila||'—'}</td>
+    <td>${formatDate(p.fecha_ingreso)}<br><span style="color:#9E9D98;font-size:9px;">${p.hora_ingreso?p.hora_ingreso.substring(0,5):'—'}</span></td>
+    <td>${p.observacion||'—'}</td><td>${p.registrado_por_nombre||'—'}</td><td>${p.modificado_por_nombre||'—'}</td>
+  </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sari Express - Paquetería</title>
+  <style>body{font-family:Arial,sans-serif;font-size:10px;color:#1A1A18;padding:24px}.header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #1A3A5C}.brand{font-size:18px;font-weight:bold;color:#1A3A5C}.meta{font-size:11px;color:#6B6A65;text-align:right}table{width:100%;border-collapse:collapse}th{background:#1A3A5C;color:white;padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase}td{padding:6px 8px;border-bottom:1px solid #E2E0D8;vertical-align:top}tr:nth-child(even) td{background:#F7F6F2}.footer{margin-top:16px;font-size:10px;color:#9E9D98;display:flex;justify-content:space-between}</style>
+  </head><body>
+  <div class="header"><div class="brand">Sari Express — Control de Paquetería</div><div class="meta">Generado: ${fechaExport} ${horaExport}<br>Por: ${currentUser._nombre}<br>Total: ${filteredPaquetes.length} paquetes</div></div>
+  <table><thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha/Hora</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <div class="footer"><span>Sari Express Forwarders</span><span>Exportado por ${currentUser._nombre} el ${fechaExport} a las ${horaExport}</span></div>
   </body></html>`;
   const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  win.focus();
+  win.document.write(html); win.document.close(); win.focus();
   setTimeout(() => win.print(), 400);
 }
 
 // ---- INCIDENCIAS ----
-let allIncidencias = [];
-let filteredIncidencias = [];
-let incPage = 1;
-const INC_PAGE_SIZE = 25;
-
 function estadoClass(estado) {
-  const map = { 'Pendiente':'pendiente', 'En proceso':'enproceso', 'Resuelta':'resuelta' };
-  return map[estado] || 'pendiente';
+  return { 'Pendiente':'pendiente', 'En proceso':'enproceso', 'Resuelta':'resuelta' }[estado] || 'pendiente';
 }
 
 async function submitIncidencia() {
@@ -1025,9 +948,8 @@ async function submitIncidencia() {
   const tipo = document.getElementById('inc-tipo').value;
   const desc = document.getElementById('inc-descripcion').value.trim();
   if (!tipo) { toast('Selecciona el tipo de incidencia.', 'error'); return; }
-  const hora = new Date().toTimeString().split(' ')[0];
-  const fecha = new Date().toISOString().split('T')[0];
-  const { error } = await sb.from('incidencias').insert({ tracking_number: tracking || null, carrier: carrier || null, tipo, descripcion: desc || null, estado: 'Pendiente', fecha, hora, reportado_por_nombre: currentUser._nombre, creado_por: currentUser.id });
+  const { fecha, hora } = getNow();
+  const { error } = await sb.from('incidencias').insert({ tracking_number: tracking||null, carrier: carrier||null, tipo, descripcion: desc||null, estado: 'Pendiente', fecha, hora, reportado_por_nombre: currentUser._nombre, creado_por: currentUser.id });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Incidencia registrada.');
   clearIncidencia();
@@ -1035,16 +957,13 @@ async function submitIncidencia() {
 }
 
 function clearIncidencia() {
-  document.getElementById('inc-tracking').value = '';
-  document.getElementById('inc-carrier').value = '';
-  document.getElementById('inc-tipo').value = '';
-  document.getElementById('inc-descripcion').value = '';
+  ['inc-tracking','inc-carrier','inc-tipo','inc-descripcion'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
 }
 
 async function loadIncidencias() {
   document.getElementById('inc-tbody').innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
   const { data, error } = await sb.from('incidencias').select('*').order('fecha', { ascending: false }).order('hora', { ascending: false });
-  if (error) { toast('Error al cargar incidencias.', 'error'); return; }
+  if (error) { toast('Error al cargar.', 'error'); return; }
   allIncidencias = data || [];
   filteredIncidencias = [...allIncidencias];
   incPage = 1;
@@ -1068,10 +987,7 @@ function filterIncidencias() {
 }
 
 function clearIncidenciasFiltros() {
-  document.getElementById('inc-filter-search').value = '';
-  document.getElementById('inc-filter-estado').value = '';
-  document.getElementById('inc-filter-desde').value = '';
-  document.getElementById('inc-filter-hasta').value = '';
+  ['inc-filter-search','inc-filter-estado','inc-filter-desde','inc-filter-hasta'].forEach(id => { document.getElementById(id).value=''; });
   filteredIncidencias = [...allIncidencias];
   incPage = 1;
   renderIncidencias();
@@ -1079,20 +995,20 @@ function clearIncidenciasFiltros() {
 
 function renderIncidencias() {
   document.getElementById('inc-count').textContent = filteredIncidencias.length;
-  const start = (incPage - 1) * INC_PAGE_SIZE;
-  const page = filteredIncidencias.slice(start, start + INC_PAGE_SIZE);
+  const start = (incPage - 1) * PAGE_SIZE;
+  const page = filteredIncidencias.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('inc-tbody');
   if (page.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No hay incidencias registradas.</p></div></td></tr>';
   } else {
     tbody.innerHTML = page.map(i => `<tr>
-      <td style="white-space:nowrap;font-size:13px;">${formatDate(i.fecha)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${i.hora ? i.hora.substring(0,5) : '—'}</span></td>
-      <td><span class="tracking-code" style="font-size:11px;">${i.tracking_number || '—'}</span></td>
-      <td>${i.carrier ? `<span class="carrier-badge ${carrierClass(i.carrier)}">${i.carrier}</span>` : '—'}</td>
+      <td style="white-space:nowrap;font-size:13px;">${formatDate(i.fecha)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${i.hora?i.hora.substring(0,5):'—'}</span></td>
+      <td><span class="tracking-code" style="font-size:11px;">${i.tracking_number||'—'}</span></td>
+      <td>${i.carrier?`<span class="carrier-badge ${carrierClass(i.carrier)}">${i.carrier}</span>`:'—'}</td>
       <td style="font-size:13px;font-weight:500;">${i.tipo}</td>
-      <td style="color:var(--text2);font-size:13px;max-width:200px;">${i.descripcion || '—'}</td>
+      <td style="color:var(--text2);font-size:13px;">${i.descripcion||'—'}</td>
       <td><button class="estado-badge estado-${estadoClass(i.estado)}" onclick="cambiarEstado('${i.id}','${i.estado}')">${i.estado}</button></td>
-      <td style="color:var(--text3);font-size:12px;">${i.reportado_por_nombre || '—'}</td>
+      <td style="color:var(--text3);font-size:12px;">${i.reportado_por_nombre||'—'}</td>
       <td class="actions-cell"><button class="btn-delete" onclick="deleteIncidencia('${i.id}')">Eliminar</button></td>
     </tr>`).join('');
   }
@@ -1103,11 +1019,9 @@ async function cambiarEstado(id, estadoActual) {
   const estados = ['Pendiente', 'En proceso', 'Resuelta'];
   const siguiente = estados[(estados.indexOf(estadoActual) + 1) % estados.length];
   const { error } = await sb.from('incidencias').update({ estado: siguiente }).eq('id', id);
-  if (error) { toast('Error al cambiar estado.', 'error'); return; }
-  const idx = allIncidencias.findIndex(i => i.id === id);
-  if (idx !== -1) allIncidencias[idx].estado = siguiente;
-  const fidx = filteredIncidencias.findIndex(i => i.id === id);
-  if (fidx !== -1) filteredIncidencias[fidx].estado = siguiente;
+  if (error) { toast('Error.', 'error'); return; }
+  const upd = arr => { const i = arr.findIndex(x => x.id === id); if (i !== -1) arr[i].estado = siguiente; };
+  upd(allIncidencias); upd(filteredIncidencias);
   renderIncidencias();
   toast(`Estado: ${siguiente}`);
 }
@@ -1123,13 +1037,13 @@ async function deleteIncidencia(id) {
 }
 
 function renderIncPagination() {
-  const total = Math.ceil(filteredIncidencias.length / INC_PAGE_SIZE);
+  const total = Math.ceil(filteredIncidencias.length / PAGE_SIZE);
   const pg = document.getElementById('inc-pagination');
   if (total <= 1) { pg.innerHTML = ''; return; }
   let html = `<button class="page-btn" onclick="goIncPage(${incPage-1})" ${incPage===1?'disabled':''}>← Ant</button>`;
   for (let i = 1; i <= total; i++) {
-    if (i === 1 || i === total || Math.abs(i - incPage) <= 1) html += `<button class="page-btn ${i===incPage?'active':''}" onclick="goIncPage(${i})">${i}</button>`;
-    else if (Math.abs(i - incPage) === 2) html += `<span style="color:var(--text3)">...</span>`;
+    if (i===1||i===total||Math.abs(i-incPage)<=1) html += `<button class="page-btn ${i===incPage?'active':''}" onclick="goIncPage(${i})">${i}</button>`;
+    else if (Math.abs(i-incPage)===2) html += `<span style="color:var(--text3)">...</span>`;
   }
   html += `<button class="page-btn" onclick="goIncPage(${incPage+1})" ${incPage===total?'disabled':''}>Sig →</button>`;
   pg.innerHTML = html;
@@ -1139,12 +1053,7 @@ function goIncPage(n) { incPage = n; renderIncidencias(); }
 
 function exportIncidenciasExcel() {
   if (filteredIncidencias.length === 0) { toast('No hay incidencias para exportar.', 'error'); return; }
-  const rows = filteredIncidencias.map(i => ({
-    'Fecha': formatDate(i.fecha), 'Hora': i.hora ? i.hora.substring(0,5) : '',
-    'Tracking': i.tracking_number || '', 'Carrier': i.carrier || '',
-    'Tipo': i.tipo, 'Descripción': i.descripcion || '',
-    'Estado': i.estado, 'Reportado por': i.reportado_por_nombre || ''
-  }));
+  const rows = filteredIncidencias.map(i => ({ 'Fecha': formatDate(i.fecha), 'Hora': i.hora?i.hora.substring(0,5):'', 'Tracking': i.tracking_number||'', 'Carrier': i.carrier||'', 'Tipo': i.tipo, 'Descripción': i.descripcion||'', 'Estado': i.estado, 'Reportado por': i.reportado_por_nombre||'' }));
   const ws = XLSX.utils.json_to_sheet(rows);
   ws['!cols'] = [{ wch:12 },{ wch:8 },{ wch:28 },{ wch:14 },{ wch:22 },{ wch:35 },{ wch:12 },{ wch:20 }];
   const wb = XLSX.utils.book_new();
@@ -1155,42 +1064,165 @@ function exportIncidenciasExcel() {
 
 function exportIncidenciasPDF() {
   if (filteredIncidencias.length === 0) { toast('No hay incidencias para exportar.', 'error'); return; }
-  const fecha = new Date().toLocaleDateString('es-HN');
+  const ahora = new Date();
+  const fechaExport = ahora.toLocaleDateString('es-HN');
+  const horaExport = ahora.toTimeString().substring(0,5);
   const rows = filteredIncidencias.map(i => `<tr>
-    <td>${formatDate(i.fecha)}<br><span style="color:#9E9D98;font-size:9px;">${i.hora ? i.hora.substring(0,5) : '—'}</span></td>
-    <td style="font-size:9px;">${i.tracking_number || '—'}</td>
-    <td>${i.carrier || '—'}</td>
-    <td>${i.tipo}</td>
-    <td>${i.descripcion || '—'}</td>
+    <td>${formatDate(i.fecha)}<br><span style="color:#9E9D98;font-size:9px;">${i.hora?i.hora.substring(0,5):'—'}</span></td>
+    <td style="font-size:9px;">${i.tracking_number||'—'}</td><td>${i.carrier||'—'}</td><td>${i.tipo}</td><td>${i.descripcion||'—'}</td>
     <td><span style="padding:2px 6px;border-radius:10px;font-weight:600;background:${i.estado==='Resuelta'?'#EAF3DE':i.estado==='En proceso'?'#E6EFF7':'#FAEEDA'};color:${i.estado==='Resuelta'?'#3B6D11':i.estado==='En proceso'?'#1A3A5C':'#854F0B'}">${i.estado}</span></td>
-    <td>${i.reportado_por_nombre || '—'}</td>
+    <td>${i.reportado_por_nombre||'—'}</td>
   </tr>`).join('');
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sari Express - Incidencias</title>
-  <style>body{font-family:Arial,sans-serif;font-size:10px;color:#1A1A18;padding:24px}.header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #a02f2f}.brand{font-size:18px;font-weight:bold;color:#a02f2f}.meta{font-size:11px;color:#6B6A65;text-align:right}table{width:100%;border-collapse:collapse}th{background:#a02f2f;color:white;padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase}td{padding:6px 8px;border-bottom:1px solid #E2E0D8;vertical-align:top}tr:nth-child(even) td{background:#F7F6F2}.footer{margin-top:16px;font-size:10px;color:#9E9D98;text-align:right}</style>
+  <style>body{font-family:Arial,sans-serif;font-size:10px;color:#1A1A18;padding:24px}.header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #a02f2f}.brand{font-size:18px;font-weight:bold;color:#a02f2f}.meta{font-size:11px;color:#6B6A65;text-align:right}table{width:100%;border-collapse:collapse}th{background:#a02f2f;color:white;padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase}td{padding:6px 8px;border-bottom:1px solid #E2E0D8;vertical-align:top}tr:nth-child(even) td{background:#F7F6F2}.footer{margin-top:16px;font-size:10px;color:#9E9D98;display:flex;justify-content:space-between}</style>
   </head><body>
-  <div class="header"><div class="brand">Sari Express — Incidencias</div><div class="meta">Generado: ${fecha}<br>Total: ${filteredIncidencias.length}</div></div>
+  <div class="header"><div class="brand">Sari Express — Incidencias</div><div class="meta">Generado: ${fechaExport} ${horaExport}<br>Por: ${currentUser._nombre}<br>Total: ${filteredIncidencias.length}</div></div>
   <table><thead><tr><th>Fecha/Hora</th><th>Tracking</th><th>Carrier</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Reportado por</th></tr></thead>
   <tbody>${rows}</tbody></table>
-  <div class="footer">Sari Express Forwarders</div></body></html>`;
+  <div class="footer"><span>Sari Express Forwarders</span><span>Exportado por ${currentUser._nombre} el ${fechaExport} a las ${horaExport}</span></div>
+  </body></html>`;
   const win = window.open('', '_blank');
   win.document.write(html); win.document.close(); win.focus();
   setTimeout(() => win.print(), 400);
 }
 
+// ---- LOGS ----
+async function loadLogs() {
+  if (!puedo('verLogs')) return;
+  document.getElementById('logs-tbody').innerHTML = '<tr><td colspan="5"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
+  const { data, error } = await sb.from('logs').select('*').order('fecha', { ascending: false }).order('hora', { ascending: false });
+  if (error) { toast('Error al cargar logs.', 'error'); return; }
+  allLogs = data || [];
+  filteredLogs = [...allLogs];
+  logsPage = 1;
+  renderLogs();
+}
+
+function filterLogs() {
+  const search = document.getElementById('logs-filter-search').value.toLowerCase();
+  const accion = document.getElementById('logs-filter-accion').value;
+  const desde = document.getElementById('logs-filter-desde').value;
+  const hasta = document.getElementById('logs-filter-hasta').value;
+  filteredLogs = allLogs.filter(l => {
+    if (search && !(l.usuario_nombre||'').toLowerCase().includes(search) && !(l.usuario_email||'').toLowerCase().includes(search) && !(l.accion||'').toLowerCase().includes(search) && !(l.tracking_numbers||[]).join(' ').toLowerCase().includes(search)) return false;
+    if (accion && l.accion !== accion) return false;
+    if (desde && l.fecha < desde) return false;
+    if (hasta && l.fecha > hasta) return false;
+    return true;
+  });
+  logsPage = 1;
+  renderLogs();
+}
+
+function clearLogsFiltros() {
+  ['logs-filter-search','logs-filter-accion','logs-filter-desde','logs-filter-hasta'].forEach(id => { document.getElementById(id).value=''; });
+  filteredLogs = [...allLogs];
+  logsPage = 1;
+  renderLogs();
+}
+
+function renderLogs() {
+  document.getElementById('logs-count').textContent = filteredLogs.length;
+  const start = (logsPage - 1) * PAGE_SIZE;
+  const page = filteredLogs.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('logs-tbody');
+  if (page.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">📋</div><p>No hay logs registrados.</p></div></td></tr>';
+    renderLogsPagination(); return;
+  }
+  let rows = '';
+  page.forEach((l, idx) => {
+    const accionClass = l.accion === 'Ingreso' ? 'ingreso' : l.accion === 'Edición' ? 'edicion' : 'eliminacion';
+    const detalle = construirDetalle(l);
+    const trackingsHtml = construirTrackings(l, idx);
+    rows += `<tr class="log-row" onclick="toggleLogDetail('log-detail-${idx}')">
+      <td style="white-space:nowrap;font-size:13px;">${formatDate(l.fecha)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${l.hora?l.hora.substring(0,5):'—'}</span></td>
+      <td><span class="log-accion-${accionClass}">${l.accion}</span></td>
+      <td style="font-size:13px;">${l.usuario_nombre||'—'}<br><span style="font-size:11px;color:var(--text3);">${l.usuario_email||''}</span></td>
+      <td style="font-size:12px;color:var(--text2);">${detalle}</td>
+      <td style="font-size:12px;">${trackingsHtml}</td>
+    </tr>
+    <tr class="log-detail" id="log-detail-${idx}">
+      <td colspan="5">${construirDetalleExpandido(l)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows;
+  renderLogsPagination();
+}
+
+function toggleLogDetail(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function construirDetalle(l) {
+  if (l.accion === 'Ingreso') return l.es_lote ? `Lote de ${l.cantidad_lote} paquetes` : '1 paquete individual';
+  if (l.accion === 'Edición') {
+    const antes = l.datos_anteriores || {};
+    const despues = l.datos_nuevos || {};
+    const cambios = [];
+    if (antes.fila !== despues.fila) cambios.push(`Fila: ${antes.fila||'—'} → ${despues.fila||'—'}`);
+    if (antes.observacion !== despues.observacion) cambios.push('Observación actualizada');
+    return cambios.join(', ') || 'Sin cambios detectados';
+  }
+  if (l.accion === 'Eliminación') return 'Paquete eliminado (oculto)';
+  return '—';
+}
+
+function construirTrackings(l, idx) {
+  const trackings = l.tracking_numbers || [];
+  if (trackings.length === 0) return '—';
+  if (!l.es_lote || trackings.length === 1) return `<span class="tracking-code" style="font-size:11px;">${trackings[0]}</span>`;
+  return `<span style="font-size:12px;color:var(--accent);cursor:pointer;" onclick="event.stopPropagation();toggleLogDetail('log-detail-${idx}')">
+    📦 ${trackings.length} trackings (ver detalle)
+  </span>`;
+}
+
+function construirDetalleExpandido(l) {
+  const trackings = l.tracking_numbers || [];
+  let html = '<div style="padding:4px 0;">';
+  if (l.es_lote && trackings.length > 1) {
+    html += `<div style="margin-bottom:8px;font-weight:600;color:var(--text);">Trackings del lote (${trackings.length}):</div>`;
+    html += '<div style="display:flex;flex-wrap:wrap;gap:4px;">' + trackings.map(t => `<span class="lote-chip">${t}</span>`).join('') + '</div>';
+  }
+  if (l.datos_anteriores || l.datos_nuevos) {
+    const antes = l.datos_anteriores || {};
+    const despues = l.datos_nuevos || {};
+    if (Object.keys(antes).length > 0 || Object.keys(despues).length > 0) {
+      html += '<div style="margin-top:10px;font-weight:600;color:var(--text);margin-bottom:6px;">Cambios:</div>';
+      const keys = new Set([...Object.keys(antes), ...Object.keys(despues)]);
+      keys.forEach(k => {
+        if (antes[k] !== despues[k]) {
+          html += `<div style="margin-bottom:4px;"><span style="color:var(--text3);text-transform:capitalize;">${k}:</span> <span style="color:var(--danger);">${antes[k]||'—'}</span> → <span style="color:var(--success);">${despues[k]||'—'}</span></div>`;
+        }
+      });
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderLogsPagination() {
+  const total = Math.ceil(filteredLogs.length / PAGE_SIZE);
+  const pg = document.getElementById('logs-pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goLogsPage(${logsPage-1})" ${logsPage===1?'disabled':''}>← Ant</button>`;
+  for (let i = 1; i <= total; i++) {
+    if (i===1||i===total||Math.abs(i-logsPage)<=1) html += `<button class="page-btn ${i===logsPage?'active':''}" onclick="goLogsPage(${i})">${i}</button>`;
+    else if (Math.abs(i-logsPage)===2) html += `<span style="color:var(--text3)">...</span>`;
+  }
+  html += `<button class="page-btn" onclick="goLogsPage(${logsPage+1})" ${logsPage===total?'disabled':''}>Sig →</button>`;
+  pg.innerHTML = html;
+}
+
+function goLogsPage(n) { logsPage = n; renderLogs(); }
+
+// ---- INIT ----
 applyLogo();
-sb.auth.getSession().then(({ data }) => {
-  if (data.session) initApp(data.session.user);
-});
+sb.auth.getSession().then(({ data }) => { if (data.session) initApp(data.session.user); });
 sb.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) initApp(session.user);
-  if (event === 'SIGNED_OUT') {
-    document.getElementById('app-screen').style.display = 'none';
-    document.getElementById('auth-screen').style.display = 'flex';
-  }
-});
-
-document.getElementById('modal-editar').addEventListener('click', function(e) {
-  if (e.target === this) cerrarModal();
+  if (event === 'SIGNED_OUT') { document.getElementById('app-screen').style.display = 'none'; document.getElementById('auth-screen').style.display = 'flex'; }
 });
 </script>
 </body>
