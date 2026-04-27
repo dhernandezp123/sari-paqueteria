@@ -107,6 +107,7 @@
   .carrier-usps { background: #E8EAF6; color: #283593; }
   .carrier-fedex { background: #EDE7F6; color: #4527A0; }
   .carrier-dhl { background: #FFF8E1; color: #E65100; }
+  .carrier-ups { background: #F5E6D3; color: #6B3F1D; }
   .carrier-other { background: var(--surface2); color: var(--text2); }
   .btn-edit { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--accent-light); background: var(--accent-light); color: var(--accent); cursor: pointer; transition: all 0.15s; }
   .btn-edit:hover { background: #d0e4f5; }
@@ -245,7 +246,7 @@
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
               <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="__otro__">Otro (especificar)</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option><option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="single-carrier-custom-wrap"><input type="text" id="single-carrier-custom" placeholder="Nombre del carrier"></div>
           </div>
@@ -274,7 +275,7 @@
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
               <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="__otro__">Otro (especificar)</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option><option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="batch-carrier-custom-wrap"><input type="text" id="batch-carrier-custom" placeholder="Nombre del carrier"></div>
           </div>
@@ -303,7 +304,7 @@
           <option value="">Todos los carriers</option>
           <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
           <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-          <option value="FedEx">FedEx</option><option value="DHL">DHL</option>
+          <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option>
         </select>
         <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
         <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
@@ -344,7 +345,7 @@
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
               <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="Otro">Otro</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option><option value="Otro">Otro</option>
             </select>
           </div>
           <div class="form-group">
@@ -564,7 +565,7 @@ function toast(msg, type='success') {
 }
 
 function carrierClass(carrier) {
-  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps', FedEx:'fedex', DHL:'dhl' };
+  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps', FedEx:'fedex', DHL:'dhl', UPS: 'ups' };
   return 'carrier-' + (map[carrier] || 'other');
 }
 
