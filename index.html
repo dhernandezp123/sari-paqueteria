@@ -51,6 +51,7 @@
   .rol-admin { background: #F3E8FF; color: #6B21A8; }
   .rol-supervisor { background: var(--accent-light); color: var(--accent); }
   .rol-agente { background: var(--success-bg); color: var(--success); }
+  .rol-consulta { background: var(--surface2); color: var(--text2); }
   .btn-sm { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); background: var(--surface); color: var(--text2); }
   .btn-sm:hover { background: var(--surface2); color: var(--text); }
   .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
@@ -274,11 +275,6 @@
             <div id="batch-counter" style="font-size:42px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;">0</div>
             <div style="font-size:11px;opacity:0.7;margin-top:4px;">paquetes</div>
           </div>
-          <div style="background:#A32D2D;border-radius:var(--radius-lg);padding:1.25rem 1.5rem;text-align:center;min-width:120px;color:white;flex-shrink:0;">
-            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;opacity:0.8;margin-bottom:6px;">Repetidos</div>
-            <div id="batch-dup-counter" style="font-size:42px;font-weight:700;font-family:'DM Mono',monospace;line-height:2;">0</div>
-            <div style="font-size:11px;opacity:0.7;margin-top:4px;">en este lote</div>
-          </div>
         </div>
         <div class="grid-3">
           <div class="form-group">
@@ -464,9 +460,10 @@ const PAGE_SIZE = 25;
 
 // ---- PERMISOS ----
 const PERMISOS = {
-  admin:      { ingresar: true,  editar: true,  eliminar: true,  verLogs: true  },
-  supervisor: { ingresar: true,  editar: true,  eliminar: false, verLogs: true  },
-  agente:     { ingresar: true,  editar: false, eliminar: false, verLogs: false }
+  admin:      { ingresar: true,  editar: true,  eliminar: true,  verLogs: true,  gestionarInc: true  },
+  supervisor: { ingresar: true,  editar: true,  eliminar: false, verLogs: true,  gestionarInc: true  },
+  agente:     { ingresar: true,  editar: false, eliminar: false, verLogs: false, gestionarInc: false },
+  consulta:   { ingresar: false, editar: false, eliminar: false, verLogs: false, gestionarInc: false }
 };
 
 function puedo(accion) { return PERMISOS[currentRol]?.[accion] || false; }
@@ -475,7 +472,8 @@ function aplicarPermisos() {
   if (!puedo('verLogs')) document.getElementById('nav-logs').classList.add('hidden');
   if (!puedo('ingresar')) document.getElementById('nav-ingreso').classList.add('hidden');
   const badge = document.getElementById('topbar-rol-badge');
-  badge.textContent = currentRol.charAt(0).toUpperCase() + currentRol.slice(1);
+  const labels = { admin: 'Admin', supervisor: 'Supervisor', agente: 'Agente', consulta: 'Consulta' };
+  badge.textContent = labels[currentRol] || currentRol;
   badge.className = `rol-badge rol-${currentRol}`;
 }
 
@@ -781,7 +779,6 @@ function actualizarContador() {
   } else {
     warn.style.display = 'none';
   }
-  document.getElementById('batch-dup-counter').textContent = dupSet.size;
 }
 
 function clearBatch() {
@@ -791,8 +788,6 @@ function clearBatch() {
   document.getElementById('batch-carrier-custom').value = '';
   document.getElementById('batch-fila').value = '';
   document.getElementById('batch-counter').textContent = '0';
-  document.getElementById('batch-dup-counter').textContent = '0';
-  document.getElementById('batch-dup-warning').style.display = 'none';
   setTodayDates();
 }
 
@@ -1000,6 +995,7 @@ function estadoClass(estado) {
 }
 
 async function submitIncidencia() {
+  if (!puedo('gestionarInc') && currentRol !== 'agente') { toast('Sin permiso para registrar incidencias.', 'error'); return; }
   const tracking = document.getElementById('inc-tracking').value.trim();
   const carrier = document.getElementById('inc-carrier').value;
   const tipo = document.getElementById('inc-tipo').value;
@@ -1055,6 +1051,7 @@ function renderIncidencias() {
   const start = (incPage - 1) * PAGE_SIZE;
   const page = filteredIncidencias.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('inc-tbody');
+  const puedeGestionar = puedo('gestionarInc');
   if (page.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No hay incidencias registradas.</p></div></td></tr>';
   } else {
@@ -1064,9 +1061,15 @@ function renderIncidencias() {
       <td>${i.carrier?`<span class="carrier-badge ${carrierClass(i.carrier)}">${i.carrier}</span>`:'—'}</td>
       <td style="font-size:13px;font-weight:500;">${i.tipo}</td>
       <td style="color:var(--text2);font-size:13px;">${i.descripcion||'—'}</td>
-      <td><button class="estado-badge estado-${estadoClass(i.estado)}" onclick="cambiarEstado('${i.id}','${i.estado}')">${i.estado}</button></td>
+      <td>${puedeGestionar
+        ? `<button class="estado-badge estado-${estadoClass(i.estado)}" onclick="cambiarEstado('${i.id}','${i.estado}')">${i.estado}</button>`
+        : `<span class="estado-badge estado-${estadoClass(i.estado)}" style="cursor:default;">${i.estado}</span>`
+      }</td>
       <td style="color:var(--text3);font-size:12px;">${i.reportado_por_nombre||'—'}</td>
-      <td class="actions-cell"><button class="btn-delete" onclick="deleteIncidencia('${i.id}')">Eliminar</button></td>
+      <td class="actions-cell">${puedeGestionar
+        ? `<button class="btn-delete" onclick="deleteIncidencia('${i.id}')">Eliminar</button>`
+        : '<span style="font-size:12px;color:var(--text3);">—</span>'
+      }</td>
     </tr>`).join('');
   }
   renderIncPagination();
@@ -1292,7 +1295,7 @@ sb.auth.onAuthStateChange((event, session) => {
 
 <!-- FOOTER -->
 <footer style="text-align:center;padding:18px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:2rem;background:var(--surface);">
-  Desarrollado por <strong style="color:var(--text2);">DHER SOLUTIONS - 2026</strong>
+  Desarrollado por <strong style="color:var(--text2);">DHERNANDEZ SOLUTIONS</strong>
 </footer>
 </body>
 </html>
