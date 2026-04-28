@@ -267,6 +267,7 @@
             <label>Tracking numbers (uno por línea)</label>
             <textarea class="batch-area" id="batch-trackings" placeholder="TBA123456789000&#10;TBA987654321000&#10;TBA111222333000" oninput="actualizarContador()"></textarea>
             <div class="batch-hint">Pega o escanea un tracking por línea. El scanner agrega Enter automáticamente.</div>
+            <div id="batch-dup-warning" style="display:none;margin-top:8px;padding:8px 12px;background:var(--danger-bg);color:var(--danger);border-radius:var(--radius);font-size:12px;line-height:1.6;"></div>
           </div>
           <div style="background:var(--accent);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;text-align:center;min-width:120px;color:white;flex-shrink:0;">
             <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;opacity:0.8;margin-bottom:6px;">Escaneados</div>
@@ -406,6 +407,10 @@
         </select>
         <input type="date" id="logs-filter-desde" onchange="filterLogs()" title="Desde">
         <input type="date" id="logs-filter-hasta" onchange="filterLogs()" title="Hasta">
+        <select id="logs-filter-orden" onchange="filterLogs()">
+          <option value="desc">Más recientes primero</option>
+          <option value="asc">Más antiguos primero</option>
+        </select>
         <button class="btn-sm" onclick="clearLogsFiltros()">Limpiar filtros</button>
       </div>
       <div class="table-wrap">
@@ -558,12 +563,8 @@ async function initApp(user) {
 
 // ---- UTILS ----
 function setTodayDates() {
-  const now = new Date();
-  const miamiDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-  const today = miamiDate.getFullYear() + '-' +
-    String(miamiDate.getMonth() + 1).padStart(2, '0') + '-' +
-    String(miamiDate.getDate()).padStart(2, '0');
-  ['single-fecha', 'batch-fecha'].forEach(id => {
+  const today = new Date().toISOString().split('T')[0];
+  ['single-fecha','batch-fecha'].forEach(id => {
     const el = document.getElementById(id);
     el.value = today; el.min = today; el.max = today;
   });
@@ -587,15 +588,7 @@ function formatDate(d) {
 }
 
 function getNow() {
-  const now = new Date();
-  const miamiDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-  const fecha = miamiDate.getFullYear() + '-' +
-    String(miamiDate.getMonth() + 1).padStart(2, '0') + '-' +
-    String(miamiDate.getDate()).padStart(2, '0');
-  const hora = String(miamiDate.getHours()).padStart(2, '0') + ':' +
-    String(miamiDate.getMinutes()).padStart(2, '0') + ':' +
-    String(miamiDate.getSeconds()).padStart(2, '0');
-  return { fecha, hora };
+  return { fecha: new Date().toISOString().split('T')[0], hora: new Date().toTimeString().split(' ')[0] };
 }
 
 // ---- LOGS ----
@@ -765,8 +758,24 @@ async function submitBatch() {
 
 function actualizarContador() {
   const raw = document.getElementById('batch-trackings').value;
-  const count = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0).length;
-  document.getElementById('batch-counter').textContent = count;
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  document.getElementById('batch-counter').textContent = lines.length;
+
+  // Detectar duplicados dentro del lote actual
+  const seen = {};
+  const dupSet = new Set();
+  lines.forEach(t => {
+    if (seen[t]) dupSet.add(t);
+    else seen[t] = true;
+  });
+
+  const warn = document.getElementById('batch-dup-warning');
+  if (dupSet.size > 0) {
+    warn.style.display = 'block';
+    warn.innerHTML = `⚠️ <strong>${dupSet.size} tracking(s) repetido(s) en este lote:</strong> ${[...dupSet].map(t => `<span style="font-family:'DM Mono',monospace;background:#FCEBEB;padding:1px 5px;border-radius:4px;">${t}</span>`).join(', ')}`;
+  } else {
+    warn.style.display = 'none';
+  }
 }
 
 function clearBatch() {
@@ -833,24 +842,36 @@ function renderTable() {
   const tbody = document.getElementById('hist-tbody');
   const canEdit = puedo('editar');
   const canDelete = puedo('eliminar');
+
+  // Detectar duplicados en toda la lista filtrada
+  const trackingCount = {};
+  filteredPaquetes.forEach(p => { trackingCount[p.tracking_number] = (trackingCount[p.tracking_number] || 0) + 1; });
+
   if (page.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
   } else {
-    tbody.innerHTML = page.map(p => `<tr>
-      <td><span class="tracking-code">${p.tracking_number}</span></td>
-      <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
-      <td>${p.fila || '—'}</td>
-      <td style="white-space:nowrap;font-size:13px;">${formatDate(p.fecha_ingreso)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</span></td>
-      <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
-      <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
-      <td style="color:var(--text3);font-size:12px;">${p.modificado_por_nombre || '—'}</td>
-      <td class="actions-cell">
-        <div style="display:flex;gap:6px;align-items:center;">
-          ${canEdit ? `<button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>` : '<span class="btn-disabled">Editar</span>'}
-          ${canDelete ? `<button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>` : ''}
-        </div>
-      </td>
-    </tr>`).join('');
+    tbody.innerHTML = page.map(p => {
+      const esDup = trackingCount[p.tracking_number] > 1;
+      const rowStyle = esDup ? 'background:#FFF0F0;' : '';
+      const trackingHtml = esDup
+        ? `<span class="tracking-code" style="background:#FCEBEB;color:#A32D2D;border:1px solid #F7C1C1;" title="Tracking duplicado">⚠️ ${p.tracking_number}</span>`
+        : `<span class="tracking-code">${p.tracking_number}</span>`;
+      return `<tr style="${rowStyle}">
+        <td>${trackingHtml}</td>
+        <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
+        <td>${p.fila || '—'}</td>
+        <td style="white-space:nowrap;font-size:13px;">${formatDate(p.fecha_ingreso)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</span></td>
+        <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
+        <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
+        <td style="color:var(--text3);font-size:12px;">${p.modificado_por_nombre || '—'}</td>
+        <td class="actions-cell">
+          <div style="display:flex;gap:6px;align-items:center;">
+            ${canEdit ? `<button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>` : '<span class="btn-disabled">Editar</span>'}
+            ${canDelete ? `<button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
   }
   renderPagination();
 }
@@ -1131,6 +1152,7 @@ function filterLogs() {
   const accion = document.getElementById('logs-filter-accion').value;
   const desde = document.getElementById('logs-filter-desde').value;
   const hasta = document.getElementById('logs-filter-hasta').value;
+  const orden = document.getElementById('logs-filter-orden').value;
   filteredLogs = allLogs.filter(l => {
     if (search && !(l.usuario_nombre||'').toLowerCase().includes(search) && !(l.usuario_email||'').toLowerCase().includes(search) && !(l.accion||'').toLowerCase().includes(search) && !(l.tracking_numbers||[]).join(' ').toLowerCase().includes(search)) return false;
     if (accion && l.accion !== accion) return false;
@@ -1138,12 +1160,18 @@ function filterLogs() {
     if (hasta && l.fecha > hasta) return false;
     return true;
   });
+  filteredLogs.sort((a, b) => {
+    const ka = (a.fecha||'') + (a.hora||'');
+    const kb = (b.fecha||'') + (b.hora||'');
+    return orden === 'asc' ? ka.localeCompare(kb) : kb.localeCompare(ka);
+  });
   logsPage = 1;
   renderLogs();
 }
 
 function clearLogsFiltros() {
   ['logs-filter-search','logs-filter-accion','logs-filter-desde','logs-filter-hasta'].forEach(id => { document.getElementById(id).value=''; });
+  document.getElementById('logs-filter-orden').value = 'desc';
   filteredLogs = [...allLogs];
   logsPage = 1;
   renderLogs();
@@ -1256,7 +1284,7 @@ sb.auth.onAuthStateChange((event, session) => {
 
 <!-- FOOTER -->
 <footer style="text-align:center;padding:18px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:2rem;background:var(--surface);">
-  Desarrollado por: <strong style="color:var(--text2);">DHERNANDEZ SOLUTIONS</strong>
+  Desarrollado por <strong style="color:var(--text2);">DHERNANDEZ SOLUTIONS</strong>
 </footer>
 </body>
 </html>
