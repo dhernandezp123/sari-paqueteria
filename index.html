@@ -558,8 +558,12 @@ async function initApp(user) {
 
 // ---- UTILS ----
 function setTodayDates() {
-  const today = new Date().toISOString().split('T')[0];
-  ['single-fecha','batch-fecha'].forEach(id => {
+  const now = new Date();
+  const miamiDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const today = miamiDate.getFullYear() + '-' +
+    String(miamiDate.getMonth() + 1).padStart(2, '0') + '-' +
+    String(miamiDate.getDate()).padStart(2, '0');
+  ['single-fecha', 'batch-fecha'].forEach(id => {
     const el = document.getElementById(id);
     el.value = today; el.min = today; el.max = today;
   });
@@ -583,7 +587,15 @@ function formatDate(d) {
 }
 
 function getNow() {
-  return { fecha: new Date().toISOString().split('T')[0], hora: new Date().toTimeString().split(' ')[0] };
+  const now = new Date();
+  const miamiDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const fecha = miamiDate.getFullYear() + '-' +
+    String(miamiDate.getMonth() + 1).padStart(2, '0') + '-' +
+    String(miamiDate.getDate()).padStart(2, '0');
+  const hora = String(miamiDate.getHours()).padStart(2, '0') + ':' +
+    String(miamiDate.getMinutes()).padStart(2, '0') + ':' +
+    String(miamiDate.getSeconds()).padStart(2, '0');
+  return { fecha, hora };
 }
 
 // ---- LOGS ----
