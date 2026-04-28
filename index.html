@@ -274,6 +274,11 @@
             <div id="batch-counter" style="font-size:42px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;">0</div>
             <div style="font-size:11px;opacity:0.7;margin-top:4px;">paquetes</div>
           </div>
+          <div style="background:#A32D2D;border-radius:var(--radius-lg);padding:1.25rem 1.5rem;text-align:center;min-width:120px;color:white;flex-shrink:0;">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;opacity:0.8;margin-bottom:6px;">Repetidos</div>
+            <div id="batch-dup-counter" style="font-size:42px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;">0</div>
+            <div style="font-size:11px;opacity:0.7;margin-top:4px;">en este lote</div>
+          </div>
         </div>
         <div class="grid-3">
           <div class="form-group">
@@ -776,6 +781,7 @@ function actualizarContador() {
   } else {
     warn.style.display = 'none';
   }
+  document.getElementById('batch-dup-counter').textContent = dupSet.size;
 }
 
 function clearBatch() {
@@ -785,6 +791,8 @@ function clearBatch() {
   document.getElementById('batch-carrier-custom').value = '';
   document.getElementById('batch-fila').value = '';
   document.getElementById('batch-counter').textContent = '0';
+  document.getElementById('batch-dup-counter').textContent = '0';
+  document.getElementById('batch-dup-warning').style.display = 'none';
   setTodayDates();
 }
 
