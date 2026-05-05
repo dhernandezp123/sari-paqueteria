@@ -128,6 +128,10 @@
   .estado-pendiente { background: var(--warning-bg); color: var(--warning); }
   .estado-enproceso { background: var(--accent-light); color: var(--accent); }
   .estado-resuelta { background: var(--success-bg); color: var(--success); }
+  .pa-pendiente { background: var(--warning-bg); color: var(--warning); font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+  .pa-recibido { background: var(--success-bg); color: var(--success); font-size:11px; font-weight:600; padding:3px 8px; border-radius:20rap; white-space:nowrap; }
+  .pa-cancelado { background: var(--danger-bg); color: var(--danger); font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+  .tracking-prealerta { font-family:'DM Mono',monospace; font-size:12.5px; color:#854F0B; background:#FAEEDA; padding:3px 7px; border-radius:5px; border:1px solid #f5d79a; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
   .modal-overlay.open { display: flex; }
   .modal-box { background: var(--surface); border-radius: var(--radius-lg); padding: 1.75rem; width: 100%; max-width: 460px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
@@ -215,6 +219,7 @@
     <button class="nav-item active" onclick="showPanel('dashboard')">Inicio</button>
     <button class="nav-item" onclick="showPanel('ingreso')" id="nav-ingreso">Ingresar paquetes</button>
     <button class="nav-item" onclick="showPanel('historico')">Historial</button>
+    <button class="nav-item" onclick="showPanel('prealerta')" id="nav-prealerta">Pre-Alertas</button>
     <button class="nav-item" onclick="showPanel('incidencias')">Incidencias</button>
     <button class="nav-item" onclick="showPanel('logs')" id="nav-logs">Logs</button>
   </div>
@@ -225,7 +230,8 @@
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Hoy</div><div class="stat-value" id="stat-today">0</div><div class="stat-sub">paquetes ingresados</div></div>
         <div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-value" id="stat-week">0</div><div id="stat-week-delta" class="stat-sub">vs semana anterior</div></div>
-        <div class="stat-card"><div class="stat-label">Este mes</div><div class="stat-value" id="stat-month">0</div><div class="stat-sub">paquetes</div></div>
+        <div class="stat-card"><div class="stat-label">Este mes</div><div class="stat-value" id="stat-month">0</div><div id="stat-month-delta" class="stat-sub">paquetes</div></div>
+        <div class="stat-card"><div class="stat-label">Mes anterior</div><div class="stat-value" id="stat-prev-month">0</div><div id="stat-prev-month-name" class="stat-sub">paquetes</div></div>
         <div class="stat-card"><div class="stat-label">Total histórico</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub">en el sistema</div></div>
       </div>
       <div class="dash-row">
@@ -430,6 +436,90 @@
       <div class="pagination" id="logs-pagination"></div>
     </div>
 
+    <!-- PRE-ALERTAS -->
+    <div class="panel" id="panel-prealerta">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="section-title">Pre-Alertas</span>
+          <span class="count-badge" id="pa-count">0</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm btn-accent" onclick="exportPreAlertasExcel()">Exportar Excel</button>
+        </div>
+      </div>
+
+      <div class="card" id="pa-form-card">
+        <div class="card-title">Registrar nueva pre-alerta</div>
+        <div class="grid-3">
+          <div class="form-group"><label>Tracking number *</label><input type="text" id="pa-tracking" placeholder="ej. TBA123456789000"></div>
+          <div class="form-group">
+            <label>Carrier</label>
+            <select id="pa-carrier">
+              <option value="">Seleccionar...</option>
+              <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
+              <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>País del cliente *</label>
+            <select id="pa-pais">
+              <option value="">Seleccionar...</option>
+              <option value="Honduras">Honduras</option>
+              <option value="Guatemala">Guatemala</option>
+              <option value="El Salvador">El Salvador</option>
+              <option value="Costa Rica">Costa Rica</option>
+              <option value="Nicaragua">Nicaragua</option>
+              <option value="Panamá">Panamá</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="form-group"><label>Nombre del cliente *</label><input type="text" id="pa-cliente" placeholder="Nombre completo o empresa"></div>
+          <div class="form-group"><label>Cantidad de piezas (opcional)</label><input type="number" id="pa-piezas" placeholder="ej. 3" min="1"></div>
+          <div class="form-group"><label>Peso en lbs (opcional)</label><input type="number" id="pa-peso" placeholder="ej. 5.5" step="0.1" min="0"></div>
+        </div>
+        <div class="form-group"><label>Observación (opcional)</label><input type="text" id="pa-obs" placeholder="Notas adicionales para el operativo"></div>
+        <div class="btn-group">
+          <button class="btn-submit" onclick="submitPreAlerta()">Guardar pre-alerta</button>
+          <button class="btn-clear" onclick="clearPreAlerta()">Limpiar</button>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <input type="text" id="pa-filter-search" placeholder="Buscar tracking, cliente o país..." oninput="filterPreAlertas()">
+        <select id="pa-filter-estado" onchange="filterPreAlertas()">
+          <option value="">Todos los estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Recibido en Almacén Miami">Recibido en Almacén Miami</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+        <select id="pa-filter-pais" onchange="filterPreAlertas()">
+          <option value="">Todos los países</option>
+          <option value="Honduras">Honduras</option>
+          <option value="Guatemala">Guatemala</option>
+          <option value="El Salvador">El Salvador</option>
+          <option value="Costa Rica">Costa Rica</option>
+          <option value="Nicaragua">Nicaragua</option>
+          <option value="Panamá">Panamá</option>
+        </select>
+        <button class="btn-sm" onclick="clearPreAlertasFiltros()">Limpiar filtros</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Tracking</th><th>Carrier</th><th>Cliente</th><th>País</th><th>Piezas</th><th>Peso</th><th>Estado</th><th>Registrado por</th><th>Fecha</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="pa-tbody">
+            <tr><td colspan="10"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pa-pagination"></div>
+    </div>
+
   </div>
 </div>
 
@@ -463,6 +553,8 @@ let currentRol = 'agente';
 let allPaquetes = [], filteredPaquetes = [], currentPage = 1;
 let allIncidencias = [], filteredIncidencias = [], incPage = 1;
 let allLogs = [], filteredLogs = [], logsPage = 1;
+let allPreAlertas = [], filteredPreAlertas = [], paPage = 1;
+let preAlertaMap = {};
 const PAGE_SIZE = 25;
 
 // ---- PERMISOS ----
@@ -482,6 +574,11 @@ function aplicarPermisos() {
   const labels = { admin: 'Admin', supervisor: 'Supervisor', agente: 'Agente', consulta: 'Consulta' };
   badge.textContent = labels[currentRol] || currentRol;
   badge.className = `rol-badge rol-${currentRol}`;
+  // Agente de bodega no crea pre-alertas, consulta y vendedores sí
+  if (currentRol === 'agente') {
+    const formCard = document.getElementById('pa-form-card');
+    if (formCard) formCard.style.display = 'none';
+  }
 }
 
 // ---- LOGO ----
@@ -569,6 +666,10 @@ async function initApp(user) {
   setTodayDates();
   loadDashboard();
   loadHistorico();
+  // Cargar mapa de pre-alertas para el historial
+  sb.from('pre_alertas').select('tracking_number, cliente, pais, estado').then(({ data }) => {
+    if (data) { preAlertaMap = {}; data.forEach(pa => { if (!preAlertaMap[pa.tracking_number]) preAlertaMap[pa.tracking_number] = pa; }); }
+  });
 }
 
 // ---- UTILS ----
@@ -620,12 +721,13 @@ function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  const idx = {dashboard:0, ingreso:1, historico:2, incidencias:3, logs:4}[name];
+  const idx = {dashboard:0, ingreso:1, historico:2, prealerta:3, incidencias:4, logs:5}[name];
   document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
   if (name === 'historico') loadHistorico();
   if (name === 'dashboard') loadDashboard();
   if (name === 'incidencias') loadIncidencias();
   if (name === 'logs') loadLogs();
+  if (name === 'prealerta') loadPreAlertas();
 }
 
 // ---- DASHBOARD ----
@@ -635,6 +737,14 @@ async function loadDashboard() {
   const now = new Date();
   const today = now.toISOString().split('T')[0];
   const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+
+  // Mes anterior
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthStart = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth()+1).padStart(2,'0')}-01`;
+  const prevMonthEnd = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const prevMonthName = meses[prevMonthDate.getMonth()];
+
   const dow = now.getDay();
   const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - dow);
   const weekStart = startOfWeek.toISOString().split('T')[0];
@@ -642,12 +752,30 @@ async function loadDashboard() {
   const prevWeekStart = startOfPrevWeek.toISOString().split('T')[0];
   const prevWeekEnd = new Date(startOfWeek); prevWeekEnd.setDate(prevWeekEnd.getDate() - 1);
   const prevWeekEndStr = prevWeekEnd.toISOString().split('T')[0];
+
   const thisWeekCount = data.filter(p => p.fecha_ingreso >= weekStart).length;
   const prevWeekCount = data.filter(p => p.fecha_ingreso >= prevWeekStart && p.fecha_ingreso <= prevWeekEndStr).length;
+  const thisMonthCount = data.filter(p => p.fecha_ingreso >= monthStart).length;
+  const prevMonthCount = data.filter(p => p.fecha_ingreso >= prevMonthStart && p.fecha_ingreso < prevMonthEnd).length;
+
   document.getElementById('stat-today').textContent = data.filter(p => p.fecha_ingreso === today).length;
   document.getElementById('stat-week').textContent = thisWeekCount;
-  document.getElementById('stat-month').textContent = data.filter(p => p.fecha_ingreso >= monthStart).length;
+  document.getElementById('stat-month').textContent = thisMonthCount;
+  document.getElementById('stat-prev-month').textContent = prevMonthCount;
+  document.getElementById('stat-prev-month-name').textContent = prevMonthName;
   document.getElementById('stat-total').textContent = data.length;
+
+  // Delta mes actual vs mes anterior
+  const monthDeltaEl = document.getElementById('stat-month-delta');
+  if (prevMonthCount === 0) { monthDeltaEl.textContent = 'paquetes'; monthDeltaEl.className = 'stat-sub'; }
+  else {
+    const diff = thisMonthCount - prevMonthCount;
+    const pct = Math.round((Math.abs(diff) / prevMonthCount) * 100);
+    if (diff > 0) { monthDeltaEl.textContent = `+${pct}% vs ${prevMonthName}`; monthDeltaEl.className = 'stat-delta-up'; }
+    else if (diff < 0) { monthDeltaEl.textContent = `-${pct}% vs ${prevMonthName}`; monthDeltaEl.className = 'stat-delta-down'; }
+    else { monthDeltaEl.textContent = `igual que ${prevMonthName}`; monthDeltaEl.className = 'stat-sub'; }
+  }
+
   const deltaEl = document.getElementById('stat-week-delta');
   if (prevWeekCount === 0) { deltaEl.textContent = 'vs semana anterior'; deltaEl.className = 'stat-sub'; }
   else {
@@ -657,6 +785,7 @@ async function loadDashboard() {
     else if (diff < 0) { deltaEl.textContent = `-${pct}% vs sem. anterior`; deltaEl.className = 'stat-delta-down'; }
     else { deltaEl.textContent = 'igual que sem. anterior'; deltaEl.className = 'stat-sub'; }
   }
+
   const thisMonthData = data.filter(p => p.fecha_ingreso >= monthStart);
   const carrierCounts = {};
   thisMonthData.forEach(p => { carrierCounts[p.carrier] = (carrierCounts[p.carrier] || 0) + 1; });
@@ -671,6 +800,7 @@ async function loadDashboard() {
       </div>
       <div class="carrier-bar-wrap"><div class="carrier-bar" style="width:${Math.round((count/maxVal)*100)}%"></div></div>
     </div>`).join('');
+
   const recent = data.slice(0, 8);
   const wrap = document.getElementById('recent-table-wrap');
   if (recent.length === 0) { wrap.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No hay paquetes aún.</p></div>'; return; }
@@ -721,6 +851,8 @@ async function submitSingle() {
   const { error } = await sb.from('paquetes').insert(datos);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   await registrarLog('Ingreso', [tracking], false, null, { carrier, fila, fecha_ingreso: fecha });
+  // Auto-marcar pre-alerta si existe
+  await verificarYMarcarPreAlerta([tracking]);
   toast('Paquete guardado correctamente.');
   clearSingle();
   loadDashboard();
@@ -761,6 +893,7 @@ async function submitBatch() {
   const { error } = await sb.from('paquetes').insert(rows);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   await registrarLog('Ingreso', lines, true, null, { carrier, fila, fecha_ingreso: fecha });
+  await verificarYMarcarPreAlerta(lines);
   toast(`${lines.length} paquete(s) guardados correctamente.`);
   clearBatch();
   loadDashboard();
@@ -862,12 +995,19 @@ function renderTable() {
   } else {
     tbody.innerHTML = page.map(p => {
       const esDup = trackingCount[p.tracking_number] > 1;
+      const tienePA = preAlertaMap[p.tracking_number];
       const rowStyle = esDup ? 'background:#FFF0F0;' : '';
-      const trackingHtml = esDup
-        ? `<span class="tracking-code" style="background:#FCEBEB;color:#A32D2D;border:1px solid #F7C1C1;" title="Tracking duplicado">⚠️ ${p.tracking_number}</span>`
-        : `<span class="tracking-code">${p.tracking_number}</span>`;
+      let trackingHtml;
+      if (esDup) {
+        trackingHtml = `<span class="tracking-code" style="background:#FCEBEB;color:#A32D2D;border:1px solid #F7C1C1;" title="Tracking duplicado">⚠️ ${p.tracking_number}</span>`;
+      } else if (tienePA) {
+        trackingHtml = `<span class="tracking-prealerta" title="Pre-alerta: ${tienePA.cliente} (${tienePA.pais})">🔔 ${p.tracking_number}</span>`;
+      } else {
+        trackingHtml = `<span class="tracking-code">${p.tracking_number}</span>`;
+      }
+      const paInfo = tienePA ? `<div style="font-size:11px;color:var(--warning);margin-top:3px;">📦 ${tienePA.cliente} · ${tienePA.pais}</div>` : '';
       return `<tr style="${rowStyle}">
-        <td>${trackingHtml}</td>
+        <td>${trackingHtml}${paInfo}</td>
         <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
         <td>${p.fila || '—'}</td>
         <td style="white-space:nowrap;font-size:13px;">${formatDate(p.fecha_ingreso)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</span></td>
@@ -1291,6 +1431,149 @@ function renderLogsPagination() {
 
 function goLogsPage(n) { logsPage = n; renderLogs(); }
 
+// ---- PRE-ALERTAS ----
+async function verificarYMarcarPreAlerta(trackings) {
+  const { data } = await sb.from('pre_alertas').select('id, tracking_number, cliente, pais').in('tracking_number', trackings).eq('estado', 'Pendiente');
+  if (!data || data.length === 0) return;
+  const ids = data.map(pa => pa.id);
+  await sb.from('pre_alertas').update({ estado: 'Recibido en Almacén Miami' }).in('id', ids);
+  data.forEach(pa => { toast(`🔔 Pre-alerta recibida: ${pa.tracking_number} — ${pa.cliente} (${pa.pais})`, 'success'); });
+}
+
+async function loadPreAlertas() {
+  document.getElementById('pa-tbody').innerHTML = '<tr><td colspan="10"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
+  const { data, error } = await sb.from('pre_alertas').select('*').order('created_at', { ascending: false });
+  if (error) { toast('Error al cargar pre-alertas.', 'error'); return; }
+  allPreAlertas = data || [];
+  filteredPreAlertas = [...allPreAlertas];
+  preAlertaMap = {};
+  allPreAlertas.forEach(pa => { if (!preAlertaMap[pa.tracking_number]) preAlertaMap[pa.tracking_number] = pa; });
+  paPage = 1;
+  renderPreAlertas();
+}
+
+function filterPreAlertas() {
+  const search = document.getElementById('pa-filter-search').value.toLowerCase();
+  const estado = document.getElementById('pa-filter-estado').value;
+  const pais = document.getElementById('pa-filter-pais').value;
+  filteredPreAlertas = allPreAlertas.filter(pa => {
+    if (search && !pa.tracking_number.toLowerCase().includes(search) && !(pa.cliente||'').toLowerCase().includes(search) && !(pa.pais||'').toLowerCase().includes(search)) return false;
+    if (estado && pa.estado !== estado) return false;
+    if (pais && pa.pais !== pais) return false;
+    return true;
+  });
+  paPage = 1;
+  renderPreAlertas();
+}
+
+function clearPreAlertasFiltros() {
+  ['pa-filter-search','pa-filter-estado','pa-filter-pais'].forEach(id => { document.getElementById(id).value = ''; });
+  filteredPreAlertas = [...allPreAlertas];
+  paPage = 1;
+  renderPreAlertas();
+}
+
+function paEstadoClass(estado) {
+  if (estado === 'Recibido en Almacén Miami') return 'pa-recibido';
+  if (estado === 'Cancelado') return 'pa-cancelado';
+  return 'pa-pendiente';
+}
+
+function renderPreAlertas() {
+  document.getElementById('pa-count').textContent = filteredPreAlertas.length;
+  const start = (paPage - 1) * PAGE_SIZE;
+  const page = filteredPreAlertas.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('pa-tbody');
+  if (page.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="icon">🔔</div><p>No hay pre-alertas registradas.</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = page.map(pa => `<tr>
+      <td><span class="tracking-code">${pa.tracking_number}</span></td>
+      <td>${pa.carrier ? `<span class="carrier-badge ${carrierClass(pa.carrier)}">${pa.carrier}</span>` : '—'}</td>
+      <td style="font-size:13px;font-weight:500;">${pa.cliente||'—'}</td>
+      <td><span style="font-size:12px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:20px;">${pa.pais||'—'}</span></td>
+      <td style="font-size:13px;text-align:center;">${pa.piezas||'—'}</td>
+      <td style="font-size:13px;text-align:center;">${pa.peso ? pa.peso+' lbs' : '—'}</td>
+      <td><span class="${paEstadoClass(pa.estado)}" style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;white-space:nowrap;">${pa.estado}</span></td>
+      <td style="color:var(--text3);font-size:12px;">${pa.creado_por_nombre||'—'}</td>
+      <td style="font-size:12px;color:var(--text2);">${formatDate(pa.fecha)}</td>
+      <td class="actions-cell"><div style="display:flex;gap:6px;">
+        ${pa.estado === 'Pendiente' ? `<button class="btn-clear" style="padding:4px 10px;font-size:12px;" onclick="cancelarPreAlerta('${pa.id}')">Cancelar</button>` : ''}
+        <button class="btn-delete" onclick="deletePreAlerta('${pa.id}')">Eliminar</button>
+      </div></td>
+    </tr>`).join('');
+  }
+  renderPaPagination();
+}
+
+async function submitPreAlerta() {
+  const tracking = document.getElementById('pa-tracking').value.trim();
+  const carrier = document.getElementById('pa-carrier').value;
+  const pais = document.getElementById('pa-pais').value;
+  const cliente = document.getElementById('pa-cliente').value.trim();
+  const piezas = document.getElementById('pa-piezas').value;
+  const peso = document.getElementById('pa-peso').value;
+  const obs = document.getElementById('pa-obs').value.trim();
+  if (!tracking) { toast('Ingresa el tracking number.', 'error'); return; }
+  if (!pais) { toast('Selecciona el país del cliente.', 'error'); return; }
+  if (!cliente) { toast('Ingresa el nombre del cliente.', 'error'); return; }
+  const { fecha } = getNow();
+  const { error } = await sb.from('pre_alertas').insert({ tracking_number: tracking, carrier: carrier||null, pais, cliente, piezas: piezas?parseInt(piezas):null, peso: peso?parseFloat(peso):null, observacion: obs||null, estado: 'Pendiente', fecha, creado_por: currentUser.id, creado_por_nombre: currentUser._nombre });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Pre-alerta registrada correctamente.');
+  clearPreAlerta();
+  loadPreAlertas();
+}
+
+function clearPreAlerta() {
+  ['pa-tracking','pa-carrier','pa-pais','pa-cliente','pa-piezas','pa-peso','pa-obs'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+}
+
+async function cancelarPreAlerta(id) {
+  if (!confirm('¿Cancelar esta pre-alerta?')) return;
+  const { error } = await sb.from('pre_alertas').update({ estado: 'Cancelado' }).eq('id', id);
+  if (error) { toast('Error.', 'error'); return; }
+  [allPreAlertas, filteredPreAlertas].forEach(arr => { const i = arr.findIndex(pa => pa.id === id); if (i !== -1) arr[i].estado = 'Cancelado'; });
+  renderPreAlertas();
+  toast('Pre-alerta cancelada.');
+}
+
+async function deletePreAlerta(id) {
+  if (!confirm('¿Eliminar esta pre-alerta?')) return;
+  const { error } = await sb.from('pre_alertas').delete().eq('id', id);
+  if (error) { toast('Error.', 'error'); return; }
+  allPreAlertas = allPreAlertas.filter(pa => pa.id !== id);
+  filteredPreAlertas = filteredPreAlertas.filter(pa => pa.id !== id);
+  renderPreAlertas();
+  toast('Pre-alerta eliminada.');
+}
+
+function renderPaPagination() {
+  const total = Math.ceil(filteredPreAlertas.length / PAGE_SIZE);
+  const pg = document.getElementById('pa-pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goPaPage(${paPage-1})" ${paPage===1?'disabled':''}>← Ant</button>`;
+  for (let i = 1; i <= total; i++) {
+    if (i===1||i===total||Math.abs(i-paPage)<=1) html += `<button class="page-btn ${i===paPage?'active':''}" onclick="goPaPage(${i})">${i}</button>`;
+    else if (Math.abs(i-paPage)===2) html += `<span style="color:var(--text3)">...</span>`;
+  }
+  html += `<button class="page-btn" onclick="goPaPage(${paPage+1})" ${paPage===total?'disabled':''}>Sig →</button>`;
+  pg.innerHTML = html;
+}
+
+function goPaPage(n) { paPage = n; renderPreAlertas(); }
+
+function exportPreAlertasExcel() {
+  if (filteredPreAlertas.length === 0) { toast('No hay pre-alertas para exportar.', 'error'); return; }
+  const rows = filteredPreAlertas.map(pa => ({ 'Tracking': pa.tracking_number, 'Carrier': pa.carrier||'', 'Cliente': pa.cliente||'', 'País': pa.pais||'', 'Piezas': pa.piezas||'', 'Peso (lbs)': pa.peso||'', 'Estado': pa.estado, 'Observación': pa.observacion||'', 'Registrado por': pa.creado_por_nombre||'', 'Fecha': formatDate(pa.fecha) }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch:28 },{ wch:12 },{ wch:22 },{ wch:14 },{ wch:8 },{ wch:10 },{ wch:24 },{ wch:25 },{ wch:18 },{ wch:12 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Pre-Alertas');
+  XLSX.writeFile(wb, `sari_prealerts_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('Excel exportado.');
+}
+
 // ---- INIT ----
 applyLogo();
 sb.auth.getSession().then(({ data }) => { if (data.session) initApp(data.session.user); });
@@ -1302,7 +1585,7 @@ sb.auth.onAuthStateChange((event, session) => {
 
 <!-- FOOTER -->
 <footer style="text-align:center;padding:18px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:2rem;background:var(--surface);">
-  Desarrollado por <strong style="color:var(--text2);">DHER SOLUTIONS - 2026 para SARI EXPRESS FORWARDERS</strong>
+  Desarrollado por <strong style="color:var(--text2);">DHER SOLUTIONS para SARI EXPRESS FORWARDERS - 2026</strong>
 </footer>
 </body>
 </html>
