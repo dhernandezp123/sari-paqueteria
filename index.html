@@ -108,6 +108,7 @@
   .carrier-usps { background: #E8EAF6; color: #283593; }
   .carrier-fedex { background: #EDE7F6; color: #4527A0; }
   .carrier-dhl { background: #FFF8E1; color: #E65100; }
+  .carrier-ups { background: #FFF3E0; color: #4E2C06; }
   .carrier-other { background: var(--surface2); color: var(--text2); }
   .btn-edit { padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--accent-light); background: var(--accent-light); color: var(--accent); cursor: pointer; transition: all 0.15s; }
   .btn-edit:hover { background: #d0e4f5; }
@@ -154,6 +155,7 @@
   .log-accion-ingreso { background: var(--success-bg); color: var(--success); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
   .log-accion-edicion { background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
   .log-accion-eliminacion { background: var(--danger-bg); color: var(--danger); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .log-accion-prealerta { background: #FAEEDA; color: #854F0B; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
   .log-detail { display: none; background: var(--surface2) !important; }
   .log-detail td { padding: 12px 20px; font-size: 12px; color: var(--text2); }
   .log-detail.open { display: table-row; }
@@ -252,7 +254,7 @@
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
               <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="__otro__">Otro (especificar)</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option><option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="single-carrier-custom-wrap"><input type="text" id="single-carrier-custom" placeholder="Nombre del carrier"></div>
           </div>
@@ -296,7 +298,7 @@
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
               <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="__otro__">Otro (especificar)</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option><option value="__otro__">Otro (especificar)</option>
             </select>
             <div class="carrier-custom-wrap" id="batch-carrier-custom-wrap"><input type="text" id="batch-carrier-custom" placeholder="Nombre del carrier"></div>
           </div>
@@ -325,7 +327,7 @@
           <option value="">Todos los carriers</option>
           <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
           <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-          <option value="FedEx">FedEx</option><option value="DHL">DHL</option>
+          <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option>
         </select>
         <input type="date" id="filter-desde" onchange="filterTable()" title="Desde">
         <input type="date" id="filter-hasta" onchange="filterTable()" title="Hasta">
@@ -340,8 +342,8 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha / Hora</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th><th id="th-acciones">Acciones</th></tr></thead>
-          <tbody id="hist-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr></tbody>
+          <thead><tr><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Fecha / Hora</th><th>Manifiesto</th><th>Observación</th><th>Registrado por</th><th>Modificado por</th><th id="th-acciones">Acciones</th></tr></thead>
+          <tbody id="hist-tbody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr></tbody>
         </table>
       </div>
       <div class="pagination" id="pagination"></div>
@@ -366,7 +368,7 @@
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
               <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="Otro">Otro</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option><option value="Otro">Otro</option>
             </select>
           </div>
           <div class="form-group">
@@ -417,7 +419,7 @@
         <input type="text" id="logs-filter-search" placeholder="Buscar usuario, tracking o acción..." oninput="filterLogs()">
         <select id="logs-filter-accion" onchange="filterLogs()">
           <option value="">Todas las acciones</option>
-          <option value="Ingreso">Ingreso</option><option value="Edición">Edición</option><option value="Eliminación">Eliminación</option>
+          <option value="Ingreso">Ingreso</option><option value="Edición">Edición</option><option value="Eliminación">Eliminación</option><option value="Pre-Alerta">Pre-Alerta</option>
         </select>
         <input type="date" id="logs-filter-desde" onchange="filterLogs()" title="Desde">
         <input type="date" id="logs-filter-hasta" onchange="filterLogs()" title="Hasta">
@@ -445,6 +447,7 @@
         </div>
         <div style="display:flex;gap:8px;">
           <button class="btn-sm btn-accent" onclick="exportPreAlertasExcel()">Exportar Excel</button>
+          <button class="btn-sm" style="background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bg);" onclick="exportPreAlertasPDF()">Exportar PDF</button>
         </div>
       </div>
 
@@ -458,7 +461,7 @@
               <option value="">Seleccionar...</option>
               <option value="Amazon">Amazon</option><option value="Shein">Shein</option><option value="eBay">eBay</option>
               <option value="Temu">Temu</option><option value="AliExpress">AliExpress</option><option value="USPS">USPS</option>
-              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="Otro">Otro</option>
+              <option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="UPS">UPS</option><option value="Otro">Otro</option>
             </select>
           </div>
           <div class="form-group">
@@ -688,7 +691,7 @@ function toast(msg, type='success') {
 }
 
 function carrierClass(carrier) {
-  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps', FedEx:'fedex', DHL:'dhl' };
+  const map = { Amazon:'amazon', Shein:'shein', eBay:'ebay', Temu:'temu', AliExpress:'aliexpress', USPS:'usps', FedEx:'fedex', DHL:'dhl', UPS:'ups' };
   return 'carrier-' + (map[carrier] || 'other');
 }
 
@@ -847,13 +850,17 @@ async function submitSingle() {
     if (!confirm(msg)) return;
   }
   const { hora } = getNow();
-  const datos = { tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, hora_ingreso: hora, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre };
+  const manifiestoNum = await generarNumeroManifiesto();
+  const { data: manData, error: manError } = await sb.from('manifiestos').insert({
+    numero: manifiestoNum, fecha: fecha, hora, recibido_por_nombre: currentUser._nombre,
+    recibido_por_id: currentUser.id, carrier, fila, total_trackings: 1
+  }).select().single();
+  const datos = { tracking_number: tracking, carrier, fila, fecha_ingreso: fecha, hora_ingreso: hora, observacion: obs, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre, manifiesto_id: manifiestoNum };
   const { error } = await sb.from('paquetes').insert(datos);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  await registrarLog('Ingreso', [tracking], false, null, { carrier, fila, fecha_ingreso: fecha });
-  // Auto-marcar pre-alerta si existe
+  await registrarLog('Ingreso', [tracking], false, null, { carrier, fila, fecha_ingreso: fecha, manifiesto: manifiestoNum });
   await verificarYMarcarPreAlerta([tracking]);
-  toast('Paquete guardado correctamente.');
+  toast(`Paquete guardado — Manifiesto ${manifiestoNum}`);
   clearSingle();
   loadDashboard();
 }
@@ -889,12 +896,17 @@ async function submitBatch() {
     if (!confirm(`${duplicados.length} tracking(s) ya existen:\n\n${lista}\n\n¿Deseas guardar el lote completo de todas formas?`)) return;
   }
   const { hora } = getNow();
-  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, hora_ingreso: hora, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre }));
+  const manifiestoNum = await generarNumeroManifiesto();
+  await sb.from('manifiestos').insert({
+    numero: manifiestoNum, fecha: fecha, hora, recibido_por_nombre: currentUser._nombre,
+    recibido_por_id: currentUser.id, carrier, fila, total_trackings: lines.length
+  });
+  const rows = lines.map(t => ({ tracking_number: t, carrier, fila, fecha_ingreso: fecha, hora_ingreso: hora, creado_por: currentUser.id, registrado_por_nombre: currentUser._nombre, manifiesto_id: manifiestoNum }));
   const { error } = await sb.from('paquetes').insert(rows);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  await registrarLog('Ingreso', lines, true, null, { carrier, fila, fecha_ingreso: fecha });
+  await registrarLog('Ingreso', lines, true, null, { carrier, fila, fecha_ingreso: fecha, manifiesto: manifiestoNum });
   await verificarYMarcarPreAlerta(lines);
-  toast(`${lines.length} paquete(s) guardados correctamente.`);
+  toast(`${lines.length} paquetes guardados — Manifiesto ${manifiestoNum}`);
   clearBatch();
   loadDashboard();
 }
@@ -991,7 +1003,7 @@ function renderTable() {
   filteredPaquetes.forEach(p => { trackingCount[p.tracking_number] = (trackingCount[p.tracking_number] || 0) + 1; });
 
   if (page.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">📦</div><p>No hay paquetes con estos filtros.</p></div></td></tr>';
   } else {
     tbody.innerHTML = page.map(p => {
       const esDup = trackingCount[p.tracking_number] > 1;
@@ -1006,16 +1018,20 @@ function renderTable() {
         trackingHtml = `<span class="tracking-code">${p.tracking_number}</span>`;
       }
       const paInfo = tienePA ? `<div style="font-size:11px;color:var(--warning);margin-top:3px;">📦 ${tienePA.cliente} · ${tienePA.pais}</div>` : '';
+      const manifiestoHtml = p.manifiesto_id
+        ? `<span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--accent-light);color:var(--accent);padding:2px 7px;border-radius:5px;cursor:pointer;" onclick="imprimirManifiesto('${p.manifiesto_id}')" title="Imprimir manifiesto">🖨️ ${p.manifiesto_id}</span>`
+        : '—';
       return `<tr style="${rowStyle}">
         <td>${trackingHtml}${paInfo}</td>
         <td><span class="carrier-badge ${carrierClass(p.carrier)}">${p.carrier}</span></td>
         <td>${p.fila || '—'}</td>
         <td style="white-space:nowrap;font-size:13px;">${formatDate(p.fecha_ingreso)}<br><span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</span></td>
+        <td>${manifiestoHtml}</td>
         <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
         <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
         <td style="color:var(--text3);font-size:12px;">${p.modificado_por_nombre || '—'}</td>
         <td class="actions-cell">
-          <div style="display:flex;gap:6px;align-items:center;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
             ${canEdit ? `<button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>` : '<span class="btn-disabled">Editar</span>'}
             ${canDelete ? `<button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>` : ''}
           </div>
@@ -1346,7 +1362,7 @@ function renderLogs() {
   }
   let rows = '';
   page.forEach((l, idx) => {
-    const accionClass = l.accion === 'Ingreso' ? 'ingreso' : l.accion === 'Edición' ? 'edicion' : 'eliminacion';
+    const accionClass = l.accion === 'Ingreso' ? 'ingreso' : l.accion === 'Edición' ? 'edicion' : l.accion === 'Pre-Alerta' ? 'prealerta' : 'eliminacion';
     const detalle = construirDetalle(l);
     const trackingsHtml = construirTrackings(l, idx);
     rows += `<tr class="log-row" onclick="toggleLogDetail('log-detail-${idx}')">
@@ -1435,9 +1451,12 @@ function goLogsPage(n) { logsPage = n; renderLogs(); }
 async function verificarYMarcarPreAlerta(trackings) {
   const { data } = await sb.from('pre_alertas').select('id, tracking_number, cliente, pais').in('tracking_number', trackings).eq('estado', 'Pendiente');
   if (!data || data.length === 0) return;
-  const ids = data.map(pa => pa.id);
-  await sb.from('pre_alertas').update({ estado: 'Recibido en Almacén Miami' }).in('id', ids);
-  data.forEach(pa => { toast(`🔔 Pre-alerta recibida: ${pa.tracking_number} — ${pa.cliente} (${pa.pais})`, 'success'); });
+  for (const pa of data) {
+    await sb.from('pre_alertas').update({ estado: 'Recibido en Almacén Miami' }).eq('id', pa.id);
+    toast(`🔔 Pre-alerta recibida: ${pa.tracking_number} — ${pa.cliente} (${pa.pais})`, 'success');
+  }
+  // Actualizar mapa local
+  data.forEach(pa => { if (preAlertaMap[pa.tracking_number]) preAlertaMap[pa.tracking_number].estado = 'Recibido en Almacén Miami'; });
 }
 
 async function loadPreAlertas() {
@@ -1520,6 +1539,7 @@ async function submitPreAlerta() {
   const { fecha } = getNow();
   const { error } = await sb.from('pre_alertas').insert({ tracking_number: tracking, carrier: carrier||null, pais, cliente, piezas: piezas?parseInt(piezas):null, peso: peso?parseFloat(peso):null, observacion: obs||null, estado: 'Pendiente', fecha, creado_por: currentUser.id, creado_por_nombre: currentUser._nombre });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await registrarLog('Pre-Alerta', [tracking], false, null, { cliente, pais, carrier: carrier||null });
   toast('Pre-alerta registrada correctamente.');
   clearPreAlerta();
   loadPreAlertas();
@@ -1574,6 +1594,124 @@ function exportPreAlertasExcel() {
   toast('Excel exportado.');
 }
 
+// ---- MANIFIESTOS ----
+async function generarNumeroManifiesto() {
+  const now = new Date();
+  const anio = now.getFullYear();
+  const mes = String(now.getMonth() + 1).padStart(2, '0');
+  const { data } = await sb.from('manifiestos').select('numero').order('created_at', { ascending: false }).limit(1);
+  let siguiente = 1;
+  if (data && data.length > 0) {
+    const ultimo = data[0].numero;
+    const partes = ultimo.split('-');
+    if (partes.length === 4) siguiente = parseInt(partes[3]) + 1;
+  }
+  return `MAN-${anio}-${mes}-${String(siguiente).padStart(3, '0')}`;
+}
+
+async function imprimirManifiesto(manifiestoId) {
+  const { data: man } = await sb.from('manifiestos').select('*').eq('numero', manifiestoId).single();
+  const { data: paquetes } = await sb.from('paquetes').select('tracking_number, carrier, fila, hora_ingreso, observacion').eq('manifiesto_id', manifiestoId).eq('eliminado', false);
+  if (!man || !paquetes) { toast('No se encontró el manifiesto.', 'error'); return; }
+  const logoB64 = typeof LOGO_PDF_B64 !== 'undefined' ? LOGO_PDF_B64 : '';
+  const filas = paquetes.map((p, i) => `<tr>
+    <td style="text-align:center;">${i+1}</td>
+    <td style="font-family:monospace;font-size:10px;">${p.tracking_number}</td>
+    <td>${p.carrier||'—'}</td>
+    <td>${p.fila||'—'}</td>
+    <td>${p.hora_ingreso ? p.hora_ingreso.substring(0,5) : '—'}</td>
+    <td>${p.observacion||'—'}</td>
+  </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Manifiesto ${manifiestoId}</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:11px;color:#1A1A18;padding:28px;margin:0}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:14px;border-bottom:3px solid #a02f2f;}
+    .header-left{display:flex;align-items:center;gap:14px;}
+    .brand{font-size:20px;font-weight:bold;color:#a02f2f;}
+    .sub{font-size:12px;color:#6B6A65;margin-top:3px;}
+    .man-num{font-size:22px;font-weight:bold;color:#1A3A5C;text-align:right;font-family:monospace;}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;background:#F7F6F2;padding:12px;border-radius:8px;border:1px solid #E2E0D8;}
+    .meta-item{display:flex;flex-direction:column;gap:2px;}
+    .meta-label{font-size:9px;color:#9E9D98;text-transform:uppercase;letter-spacing:0.4px;font-weight:600;}
+    .meta-value{font-size:12px;font-weight:600;color:#1A1A18;}
+    table{width:100%;border-collapse:collapse;margin-top:6px;}
+    th{background:#a02f2f;color:white;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;}
+    td{padding:7px 10px;border-bottom:1px solid #E2E0D8;vertical-align:middle;}
+    tr:nth-child(even) td{background:#F7F6F2;}
+    .total-row td{background:#1A3A5C!important;color:white;font-weight:bold;font-size:12px;}
+    .footer{margin-top:20px;padding-top:12px;border-top:1px solid #E2E0D8;display:flex;justify-content:space-between;font-size:10px;color:#9E9D98;}
+    .firma{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+    .firma-box{border-top:1px solid #1A1A18;padding-top:6px;text-align:center;font-size:10px;color:#6B6A65;}
+    @media print{body{padding:16px}}
+  </style></head><body>
+  <div class="header">
+    <div class="header-left">
+      ${logoB64 ? `<img src="${logoB64}" style="height:50px;object-fit:contain;">` : ''}
+      <div><div class="brand">Sari Express Forwarders</div><div class="sub">Miami Warehouse — Confirmación de Recepción de Carga</div></div>
+    </div>
+    <div><div class="man-num">${manifiestoId}</div><div style="text-align:right;font-size:10px;color:#6B6A65;margin-top:4px;">Manifiesto de recepción</div></div>
+  </div>
+  <div class="meta-grid">
+    <div class="meta-item"><span class="meta-label">Fecha de recepción</span><span class="meta-value">${formatDate(man.fecha)}</span></div>
+    <div class="meta-item"><span class="meta-label">Hora de recepción</span><span class="meta-value">${man.hora ? man.hora.substring(0,5) : '—'}</span></div>
+    <div class="meta-item"><span class="meta-label">Recibido por</span><span class="meta-value">${man.recibido_por_nombre||'—'}</span></div>
+    <div class="meta-item"><span class="meta-label">Carrier</span><span class="meta-value">${man.carrier||'—'}</span></div>
+    <div class="meta-item"><span class="meta-label">Fila / Ubicación</span><span class="meta-value">${man.fila||'—'}</span></div>
+    <div class="meta-item"><span class="meta-label">Total de piezas</span><span class="meta-value" style="color:#a02f2f;font-size:16px;">${man.total_trackings}</span></div>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>Tracking Number</th><th>Carrier</th><th>Fila</th><th>Hora ingreso</th><th>Observación</th></tr></thead>
+    <tbody>${filas}</tbody>
+    <tfoot><tr class="total-row"><td colspan="5" style="padding:8px 10px;">Total de paquetes recibidos en este manifiesto</td><td style="padding:8px 10px;">${paquetes.length}</td></tr></tfoot>
+  </table>
+  <div class="firma">
+    <div class="firma-box">Firma del operativo receptor<br><br>${man.recibido_por_nombre||''}</div>
+    <div class="firma-box">Firma del conductor / representante del carrier</div>
+  </div>
+  <div class="footer">
+    <span>Sari Express Forwarders — Miami, FL</span>
+    <span>Generado el ${new Date().toLocaleDateString('es-HN')} a las ${new Date().toTimeString().substring(0,5)}</span>
+  </div>
+  </body></html>`;
+  const win = window.open('', '_blank');
+  win.document.write(html); win.document.close(); win.focus();
+  setTimeout(() => win.print(), 500);
+}
+
+// ---- PDF PRE-ALERTAS ----
+function exportPreAlertasPDF() {
+  if (filteredPreAlertas.length === 0) { toast('No hay pre-alertas para exportar.', 'error'); return; }
+  const ahora = new Date();
+  const fechaExport = ahora.toLocaleDateString('es-HN');
+  const horaExport = ahora.toTimeString().substring(0,5);
+  const logoB64 = typeof LOGO_PDF_B64 !== 'undefined' ? LOGO_PDF_B64 : '';
+  const rows = filteredPreAlertas.map(pa => `<tr>
+    <td style="font-family:monospace;font-size:9px;">${pa.tracking_number}</td>
+    <td>${pa.carrier||'—'}</td><td>${pa.cliente||'—'}</td><td>${pa.pais||'—'}</td>
+    <td style="text-align:center;">${pa.piezas||'—'}</td>
+    <td style="text-align:center;">${pa.peso ? pa.peso+' lbs' : '—'}</td>
+    <td><span style="padding:2px 7px;border-radius:10px;font-weight:600;font-size:9px;background:${pa.estado==='Recibido en Almacén Miami'?'#EAF3DE':pa.estado==='Cancelado'?'#FCEBEB':'#FAEEDA'};color:${pa.estado==='Recibido en Almacén Miami'?'#3B6D11':pa.estado==='Cancelado'?'#A32D2D':'#854F0B'}">${pa.estado}</span></td>
+    <td>${pa.creado_por_nombre||'—'}</td><td>${formatDate(pa.fecha)}</td>
+  </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sari Express - Pre-Alertas</title>
+  <style>body{font-family:Arial,sans-serif;font-size:10px;color:#1A1A18;padding:24px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid #a02f2f;}.brand{font-size:16px;font-weight:bold;color:#a02f2f;}.meta{font-size:10px;color:#6B6A65;text-align:right;}table{width:100%;border-collapse:collapse;}th{background:#a02f2f;color:white;padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase;}td{padding:6px 8px;border-bottom:1px solid #E2E0D8;vertical-align:middle;}tr:nth-child(even) td{background:#F7F6F2;}.footer{margin-top:14px;font-size:9px;color:#9E9D98;display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #E2E0D8;}</style>
+  </head><body>
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:12px;">
+      ${logoB64 ? `<img src="${logoB64}" style="height:38px;object-fit:contain;">` : ''}
+      <div class="brand">Sari Express — Reporte de Pre-Alertas</div>
+    </div>
+    <div class="meta">Generado: ${fechaExport} ${horaExport}<br>Por: ${currentUser._nombre}<br>Total: ${filteredPreAlertas.length}</div>
+  </div>
+  <table><thead><tr><th>Tracking</th><th>Carrier</th><th>Cliente</th><th>País</th><th>Piezas</th><th>Peso</th><th>Estado</th><th>Registrado por</th><th>Fecha</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <div class="footer"><span>Sari Express Forwarders — Miami, FL</span><span>Exportado por ${currentUser._nombre} el ${fechaExport} a las ${horaExport}</span></div>
+  </body></html>`;
+  const win = window.open('', '_blank');
+  win.document.write(html); win.document.close(); win.focus();
+  setTimeout(() => win.print(), 400);
+}
+
 // ---- INIT ----
 applyLogo();
 sb.auth.getSession().then(({ data }) => { if (data.session) initApp(data.session.user); });
@@ -1585,7 +1723,7 @@ sb.auth.onAuthStateChange((event, session) => {
 
 <!-- FOOTER -->
 <footer style="text-align:center;padding:18px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:2rem;background:var(--surface);">
-  Desarrollado por <strong style="color:var(--text2);">DHER SOLUTIONS para SARI EXPRESS FORWARDERS - 2026</strong>
+  Desarrollado por <strong style="color:var(--text2);">DHER SOLUTIONS</strong> para <strong style="color:var(--text2);">SARI EXPRESS FORWARDERS</strong> — 2026
 </footer>
 </body>
 </html>
