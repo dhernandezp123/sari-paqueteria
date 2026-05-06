@@ -1483,18 +1483,30 @@ function goLogsPage(n) { logsPage = n; renderLogs(); }
 // ---- PRE-ALERTAS ----
 async function verificarYMarcarPreAlerta(trackings) {
   for (const t of trackings) {
-    const trackingNorm = t.trim().toUpperCase();
-    // Buscar con el tracking exacto y también normalizado
-    const { data } = await sb.from('pre_alertas')
+    const trackingLimpio = t.trim();
+    // Intentar match exacto primero
+    let { data } = await sb.from('pre_alertas')
       .select('id, tracking_number, cliente, pais')
-      .or(`tracking_number.eq.${t.trim()},tracking_number.eq.${trackingNorm}`)
+      .eq('tracking_number', trackingLimpio)
       .eq('estado', 'Pendiente');
+    // Si no encontró, intentar en mayúsculas
+    if (!data || data.length === 0) {
+      const res = await sb.from('pre_alertas')
+        .select('id, tracking_number, cliente, pais')
+        .eq('tracking_number', trackingLimpio.toUpperCase())
+        .eq('estado', 'Pendiente');
+      data = res.data;
+    }
     if (!data || data.length === 0) continue;
     for (const pa of data) {
-      const { error } = await sb.from('pre_alertas').update({ estado: 'Recibido en Almacén Miami' }).eq('id', pa.id);
+      const { error } = await sb.from('pre_alertas')
+        .update({ estado: 'Recibido en Almacén Miami' })
+        .eq('id', pa.id);
       if (!error) {
         toast(`🔔 Pre-alerta recibida: ${pa.tracking_number} — ${pa.cliente} (${pa.pais})`, 'success');
-        if (preAlertaMap[pa.tracking_number]) preAlertaMap[pa.tracking_number].estado = 'Recibido en Almacén Miami';
+        if (preAlertaMap[pa.tracking_number]) {
+          preAlertaMap[pa.tracking_number].estado = 'Recibido en Almacén Miami';
+        }
       }
     }
   }
