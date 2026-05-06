@@ -222,6 +222,7 @@
     <button class="nav-item" onclick="showPanel('ingreso')" id="nav-ingreso">Ingresar paquetes</button>
     <button class="nav-item" onclick="showPanel('historico')">Historial</button>
     <button class="nav-item" onclick="showPanel('prealerta')" id="nav-prealerta">Pre-Alertas</button>
+    <button class="nav-item" onclick="showPanel('manifiestos')" id="nav-manifiestos">Manifiestos</button>
     <button class="nav-item" onclick="showPanel('incidencias')">Incidencias</button>
     <button class="nav-item" onclick="showPanel('logs')" id="nav-logs">Logs</button>
   </div>
@@ -347,6 +348,37 @@
         </table>
       </div>
       <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- MANIFIESTOS -->
+    <div class="panel" id="panel-manifiestos">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="section-title">Manifiestos de recepción</span>
+          <span class="count-badge" id="man-count">0</span>
+        </div>
+      </div>
+      <div class="table-toolbar">
+        <input type="text" id="man-filter-search" placeholder="Buscar número, carrier o recibido por..." oninput="filterManifiestos()">
+        <input type="date" id="man-filter-desde" onchange="filterManifiestos()" title="Desde">
+        <input type="date" id="man-filter-hasta" onchange="filterManifiestos()" title="Hasta">
+        <select id="man-filter-orden" onchange="filterManifiestos()">
+          <option value="desc">Más recientes primero</option>
+          <option value="asc">Más antiguos primero</option>
+        </select>
+        <button class="btn-sm" onclick="clearManifiestosFiltros()">Limpiar filtros</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Manifiesto</th><th>Fecha</th><th>Hora</th><th>Carrier</th><th>Fila</th><th>Total piezas</th><th>Recibido por</th><th>Acción</th></tr>
+          </thead>
+          <tbody id="man-tbody">
+            <tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="man-pagination"></div>
     </div>
 
     <!-- INCIDENCIAS -->
@@ -724,13 +756,14 @@ function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  const idx = {dashboard:0, ingreso:1, historico:2, prealerta:3, incidencias:4, logs:5}[name];
+  const idx = {dashboard:0, ingreso:1, historico:2, prealerta:3, manifiestos:4, incidencias:5, logs:6}[name];
   document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
   if (name === 'historico') loadHistorico();
   if (name === 'dashboard') loadDashboard();
   if (name === 'incidencias') loadIncidencias();
   if (name === 'logs') loadLogs();
   if (name === 'prealerta') loadPreAlertas();
+  if (name === 'manifiestos') loadManifiestos();
 }
 
 // ---- DASHBOARD ----
@@ -1030,8 +1063,8 @@ function renderTable() {
         <td style="color:var(--text2);font-size:13px;">${p.observacion || '—'}</td>
         <td style="color:var(--text3);font-size:12px;">${p.registrado_por_nombre || '—'}</td>
         <td style="color:var(--text3);font-size:12px;">${p.modificado_por_nombre || '—'}</td>
-        <td class="actions-cell">
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <td class="actions-cell" style="white-space:nowrap;min-width:130px;">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
             ${canEdit ? `<button class="btn-edit" onclick="abrirModal('${p.id}')">✏️ Editar</button>` : '<span class="btn-disabled">Editar</span>'}
             ${canDelete ? `<button class="btn-delete" onclick="deletePaquete('${p.id}')">Eliminar</button>` : ''}
           </div>
@@ -1449,14 +1482,22 @@ function goLogsPage(n) { logsPage = n; renderLogs(); }
 
 // ---- PRE-ALERTAS ----
 async function verificarYMarcarPreAlerta(trackings) {
-  const { data } = await sb.from('pre_alertas').select('id, tracking_number, cliente, pais').in('tracking_number', trackings).eq('estado', 'Pendiente');
-  if (!data || data.length === 0) return;
-  for (const pa of data) {
-    await sb.from('pre_alertas').update({ estado: 'Recibido en Almacén Miami' }).eq('id', pa.id);
-    toast(`🔔 Pre-alerta recibida: ${pa.tracking_number} — ${pa.cliente} (${pa.pais})`, 'success');
+  for (const t of trackings) {
+    const trackingNorm = t.trim().toUpperCase();
+    // Buscar con el tracking exacto y también normalizado
+    const { data } = await sb.from('pre_alertas')
+      .select('id, tracking_number, cliente, pais')
+      .or(`tracking_number.eq.${t.trim()},tracking_number.eq.${trackingNorm}`)
+      .eq('estado', 'Pendiente');
+    if (!data || data.length === 0) continue;
+    for (const pa of data) {
+      const { error } = await sb.from('pre_alertas').update({ estado: 'Recibido en Almacén Miami' }).eq('id', pa.id);
+      if (!error) {
+        toast(`🔔 Pre-alerta recibida: ${pa.tracking_number} — ${pa.cliente} (${pa.pais})`, 'success');
+        if (preAlertaMap[pa.tracking_number]) preAlertaMap[pa.tracking_number].estado = 'Recibido en Almacén Miami';
+      }
+    }
   }
-  // Actualizar mapa local
-  data.forEach(pa => { if (preAlertaMap[pa.tracking_number]) preAlertaMap[pa.tracking_number].estado = 'Recibido en Almacén Miami'; });
 }
 
 async function loadPreAlertas() {
@@ -1594,7 +1635,83 @@ function exportPreAlertasExcel() {
   toast('Excel exportado.');
 }
 
-// ---- MANIFIESTOS ----
+// ---- MANIFIESTOS PANEL ----
+let allManifiestos = [], filteredManifiestos = [], manPage = 1;
+
+async function loadManifiestos() {
+  document.getElementById('man-tbody').innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div> Cargando...</div></td></tr>';
+  const { data, error } = await sb.from('manifiestos').select('*').order('created_at', { ascending: false });
+  if (error) { toast('Error al cargar manifiestos.', 'error'); return; }
+  allManifiestos = data || [];
+  filteredManifiestos = [...allManifiestos];
+  manPage = 1;
+  renderManifiestos();
+}
+
+function filterManifiestos() {
+  const search = document.getElementById('man-filter-search').value.toLowerCase();
+  const desde = document.getElementById('man-filter-desde').value;
+  const hasta = document.getElementById('man-filter-hasta').value;
+  const orden = document.getElementById('man-filter-orden').value;
+  filteredManifiestos = allManifiestos.filter(m => {
+    if (search && !m.numero.toLowerCase().includes(search) && !(m.carrier||'').toLowerCase().includes(search) && !(m.recibido_por_nombre||'').toLowerCase().includes(search)) return false;
+    if (desde && m.fecha < desde) return false;
+    if (hasta && m.fecha > hasta) return false;
+    return true;
+  });
+  filteredManifiestos.sort((a, b) => orden === 'asc' ? a.fecha.localeCompare(b.fecha) : b.fecha.localeCompare(a.fecha));
+  manPage = 1;
+  renderManifiestos();
+}
+
+function clearManifiestosFiltros() {
+  ['man-filter-search','man-filter-desde','man-filter-hasta'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('man-filter-orden').value = 'desc';
+  filteredManifiestos = [...allManifiestos];
+  manPage = 1;
+  renderManifiestos();
+}
+
+function renderManifiestos() {
+  document.getElementById('man-count').textContent = filteredManifiestos.length;
+  const start = (manPage - 1) * PAGE_SIZE;
+  const page = filteredManifiestos.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('man-tbody');
+  if (page.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No hay manifiestos registrados.</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = page.map(m => `<tr>
+      <td><span style="font-family:'DM Mono',monospace;font-size:12px;background:var(--accent-light);color:var(--accent);padding:3px 8px;border-radius:5px;font-weight:600;">${m.numero}</span></td>
+      <td style="font-size:13px;">${formatDate(m.fecha)}</td>
+      <td style="font-size:13px;font-family:'DM Mono',monospace;">${m.hora ? m.hora.substring(0,5) : '—'}</td>
+      <td>${m.carrier ? `<span class="carrier-badge ${carrierClass(m.carrier)}">${m.carrier}</span>` : '—'}</td>
+      <td style="font-size:13px;">${m.fila||'—'}</td>
+      <td style="text-align:center;"><span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);">${m.total_trackings}</span></td>
+      <td style="color:var(--text3);font-size:12px;">${m.recibido_por_nombre||'—'}</td>
+      <td class="actions-cell">
+        <button class="btn-edit" onclick="imprimirManifiesto('${m.numero}')">🖨️ Imprimir</button>
+      </td>
+    </tr>`).join('');
+  }
+  renderManPagination();
+}
+
+function renderManPagination() {
+  const total = Math.ceil(filteredManifiestos.length / PAGE_SIZE);
+  const pg = document.getElementById('man-pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goManPage(${manPage-1})" ${manPage===1?'disabled':''}>← Ant</button>`;
+  for (let i = 1; i <= total; i++) {
+    if (i===1||i===total||Math.abs(i-manPage)<=1) html += `<button class="page-btn ${i===manPage?'active':''}" onclick="goManPage(${i})">${i}</button>`;
+    else if (Math.abs(i-manPage)===2) html += `<span style="color:var(--text3)">...</span>`;
+  }
+  html += `<button class="page-btn" onclick="goManPage(${manPage+1})" ${manPage===total?'disabled':''}>Sig →</button>`;
+  pg.innerHTML = html;
+}
+
+function goManPage(n) { manPage = n; renderManifiestos(); }
+
+// ---- MANIFIESTOS GENERACION ----
 async function generarNumeroManifiesto() {
   const now = new Date();
   const anio = now.getFullYear();
